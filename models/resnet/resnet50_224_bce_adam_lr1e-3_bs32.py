@@ -19,7 +19,8 @@ train_loader = A007DataLoader(dataset=A007Dataset(txt_file='train.txt',
                                                   root_dir=data_root,
                                                   transform=transform_train,
                                                   seed=42),
-                              batch_size=32)
+                              batch_size=32,
+                              num_workers=4)
 loss_fn = CrossEntropyLoss(use_sigmoid=True)
 optimizer = Optimizer(model_params=model.parameters(),
                       optimizer='adam',

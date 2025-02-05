@@ -48,19 +48,59 @@ class RandomCrop(BaseTransform):
 
         return offset_h, offset_w
 
+    # def transform(self, results):
+    #     img = results['img']
+    #     if self.padding:
+    #         img = self.pad_image(img, self.padding)
+    #
+    #     if self.pad_if_needed:
+    #         img = self.pad_if_small(img)
+    #
+    #     offset_h, offset_w = self.rand_crop_params(img)
+    #     crop_h, crop_w = self.crop_size
+    #
+    #     cropped_img = img[offset_h:offset_h + crop_h, offset_w:offset_w + crop_w]
+    #
+    #     results['img'] = cropped_img
+    #     results['crop_size'] = cropped_img.shape
+    #     return results
+
     def transform(self, results):
         img = results['img']
+
+        # **优化1：减少内存拷贝，使用 NumPy 视图**
         if self.padding:
-            img = self.pad_image(img, self.padding)
+            img = np.pad(img, ((self.padding, self.padding), (self.padding, self.padding), (0, 0)), mode='constant')
 
+        # **优化2：尽量减少 pad_if_small 的计算**
         if self.pad_if_needed:
-            img = self.pad_if_small(img)
+            img_h, img_w = img.shape[:2]
+            crop_h, crop_w = self.crop_size
+            if img_h < crop_h or img_w < crop_w:
+                pad_h = max(0, crop_h - img_h)
+                pad_w = max(0, crop_w - img_w)
+                img = np.pad(img, ((pad_h // 2, pad_h - pad_h // 2),
+                                   (pad_w // 2, pad_w - pad_w // 2),
+                                   (0, 0)), mode='constant')
 
-        offset_h, offset_w = self.rand_crop_params(img)
+        # **优化3：随机裁剪点计算**
+        img_h, img_w = img.shape[:2]
         crop_h, crop_w = self.crop_size
 
-        cropped_img = img[offset_h:offset_h + crop_h, offset_w:offset_w + crop_w]
+        if img_h > crop_h:
+            offset_h = np.random.randint(0, img_h - crop_h + 1)
+        else:
+            offset_h = 0
+
+        if img_w > crop_w:
+            offset_w = np.random.randint(0, img_w - crop_w + 1)
+        else:
+            offset_w = 0
+
+        # **优化4：确保 NumPy 视图减少不必要的数据复制**
+        cropped_img = img[offset_h:offset_h + crop_h, offset_w:offset_w + crop_w].copy()
 
         results['img'] = cropped_img
         results['crop_size'] = cropped_img.shape
+
         return results

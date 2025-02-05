@@ -21,6 +21,8 @@ val(文件夹，存放图片)
 
 import os
 import random
+from concurrent.futures import ThreadPoolExecutor
+
 import numpy as np
 from typing import Callable, Optional
 import torch
@@ -80,11 +82,13 @@ class A007Dataset:
         return len(self.image_infos)
 
 class A007DataLoader:
-    def __init__(self, dataset:A007Dataset, batch_size:int, shuffle: bool=True):
+    def __init__(self, dataset:A007Dataset, batch_size:int, shuffle: bool=True, num_workers:int=4):
         self.dataset = dataset
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.indices = list(range(len(dataset)))
+        self.num_workers = num_workers
+        self.current_idx = 0
 
     def __iter__(self):
         self.current_idx = 0
@@ -92,17 +96,24 @@ class A007DataLoader:
             random.shuffle(self.indices)
         return self
 
+    def fetch_data(self, idx):
+        return self.dataset[idx]
+
     def __next__(self):
         if self.current_idx >= len(self.indices):
             raise StopIteration
 
         batch_indices = self.indices[self.current_idx:self.current_idx + self.batch_size]
-        batch = [self.dataset[idx] for idx in batch_indices]
+
+        # 使用多线程加载数据
+        with ThreadPoolExecutor(max_workers=self.num_workers) as executor:
+            batch = list(executor.map(self.fetch_data, batch_indices))
+
         self.current_idx += self.batch_size
 
+        # 将 batch 拆分成 images 和 labels
         images, labels = zip(*batch)
-        images, labels = torch.stack(images), torch.stack(labels)
-        return images, labels
+        return torch.stack(images), torch.stack(labels)
 
     def __len__(self):
         return (len(self.dataset) + self.batch_size - 1) // self.batch_size
@@ -110,7 +121,7 @@ class A007DataLoader:
 
 if __name__ == '__main__':
     from dataset.transform import *
-
+    import time
     transform = Compose([LoadImageFromFile(),
                          Preprocess(),
                          RandomCrop((224, 224)),
@@ -120,6 +131,9 @@ if __name__ == '__main__':
                           root_dir="/mnt/mydisk/medical_seg/fwwb_a007/data/training_data",
                           transform=transform,
                           seed=42)
-    dataloader = A007DataLoader(dataset, batch_size=4)
+    dataloader = A007DataLoader(dataset, batch_size=32, num_workers=1)
+    time_start = time.time()
     for images, labels in dataloader:
-        print(images.shape, labels)
+        time_cost = time.time() - time_start
+        print(time_cost)
+        time_start = time.time()

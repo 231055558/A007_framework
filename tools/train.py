@@ -1,6 +1,6 @@
 import torch
 from tqdm import tqdm
-
+import time
 def train_model(
         model,
         train_loader,
@@ -19,6 +19,7 @@ def train_model(
         progress_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs}")
 
         for inputs, labels in progress_bar:
+            time_start = time.time()
             inputs = inputs.to(device)
             labels = labels.to(device)
 
@@ -31,7 +32,9 @@ def train_model(
             optimizer.step()
 
             running_loss += loss.item()
-            progress_bar.set_postfix(loss=loss.item())
+            time_cost = time.time() - time_start
+            progress_bar.set_postfix(loss=loss.item(), time_cost=time_cost)
+
 
         epoch_loss = running_loss / len(train_loader)
         print(f'Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss:.4f}')
