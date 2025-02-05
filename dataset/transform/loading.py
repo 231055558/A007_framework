@@ -15,8 +15,8 @@ class LoadImageFromFile(BaseTransform):
         self.ignore_empty = ignore_empty
 
     def transform(self, results):
-        img_info = results['img_info']
-        img_path = img_info['filename']
+
+        img_path = results['image_path']
 
         if self.imdecode_backend == 'cv2':
             img = self._load_image_cv2(img_path=img_path)
