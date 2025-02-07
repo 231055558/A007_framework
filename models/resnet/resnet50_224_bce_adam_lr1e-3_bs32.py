@@ -44,7 +44,7 @@ train_model(
     loss_fn=loss_fn,
     optimizer=optimizer,
     device='cuda',
-    num_epochs=0,
+    num_epochs=100,
     save_path='best_model.pth'
 )
 
