@@ -1,6 +1,7 @@
 import torch
 from tqdm import tqdm
 import time
+from tools.val import val_model
 def train_model(
         model,
         train_loader,
@@ -9,7 +10,12 @@ def train_model(
         device='cuda',
         num_epochs=100,
         save_path='best_model.pth',
+        val=False,
+        val_loader=None,
+        metric=None,
 ):
+    if val:
+        assert val_loader is not None and metric is not None
     model.to(device)
     best_loss = float('inf')
 
@@ -42,5 +48,12 @@ def train_model(
             best_loss = epoch_loss
             torch.save(model.state_dict(), save_path)
             print(f'Saved best model with loss {epoch_loss:.4f}')
+        if val is True:
+            metrics = val_model(
+                model, val_loader, metric, device
+            )
+
+
+
 
     print("Training finished")
