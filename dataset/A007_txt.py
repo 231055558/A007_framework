@@ -26,7 +26,7 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 from typing import Callable, Optional
 import torch
-
+from torch.utils.data import DataLoader
 
 
 class ImageInfo:
@@ -42,8 +42,9 @@ class ImageInfo:
     def __repr__(self):
         return f"ImageInfo\n {self.data}"
 
-class A007Dataset:
-    def __init__(self, txt_file:str, root_dir:str, transform: Optional[Callable] = None, seed: Optional[int] = 42 ):
+
+class A007Dataset(DataLoader):
+    def __init__(self, txt_file: str, root_dir: str, transform: Optional[Callable] = None, seed: Optional[int] = 42):
         self.root_dir = root_dir
         self.transform = transform
         self.image_infos = list()
@@ -53,7 +54,7 @@ class A007Dataset:
 
         self._load_data(txt_file)
 
-    def _load_data(self, txt_file:str):
+    def _load_data(self, txt_file: str):
         txt_path = os.path.join(self.root_dir, txt_file)
         if not os.path.exists(txt_path):
             raise FileNotFoundError(f"File {txt_path} not exists!")
@@ -66,6 +67,7 @@ class A007Dataset:
                 image_path = os.path.join(self.root_dir, 'train' if 'train' in txt_file else 'val', parts[0])
                 label = [int(x) for x in parts[1]]
                 self.image_infos.append(ImageInfo(image_path, label))
+
     def __getitem__(self, idx):
         results = self.image_infos[idx]
         # image = cv2.imread(img_info['image_path'])
@@ -81,8 +83,9 @@ class A007Dataset:
     def __len__(self):
         return len(self.image_infos)
 
+
 class A007DataLoader:
-    def __init__(self, dataset:A007Dataset, batch_size:int, shuffle: bool=True, num_workers:int=4):
+    def __init__(self, dataset: A007Dataset, batch_size: int, shuffle: bool = True, num_workers: int = 4):
         self.dataset = dataset
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -122,6 +125,7 @@ class A007DataLoader:
 if __name__ == '__main__':
     from dataset.transform import *
     import time
+
     transform = Compose([LoadImageFromFile(),
                          Preprocess(),
                          RandomCrop((224, 224)),

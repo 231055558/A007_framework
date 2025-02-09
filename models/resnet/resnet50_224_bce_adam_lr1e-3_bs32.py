@@ -28,13 +28,13 @@ train_loader = A007DataLoader(dataset=A007Dataset(txt_file='train.txt',
                                                   transform=transform_train,
                                                   seed=42),
                               batch_size=32,
-                              num_workers=4)
+                              num_workers=3)
 val_loader = A007DataLoader(dataset=A007Dataset(txt_file='val.txt',
                                                   root_dir=data_root,
                                                   transform=transform_train,
                                                   seed=42),
                               batch_size=32,
-                              num_workers=4)
+                              num_workers=3)
 loss_fn = CrossEntropyLoss(use_sigmoid=True)
 metric = A007_Metrics(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
 optimizer = Optimizer(model_params=model.parameters(),
@@ -53,7 +53,8 @@ train_model(
     optimizer=optimizer,
     device='cuda',
     num_epochs=100,
-    save_path='best_model.pth'
+    save_path='best_model.pth',
+    val=True
 )
 
 # val_model(
