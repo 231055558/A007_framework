@@ -13,14 +13,14 @@ from torch.utils.data import DataLoader
 data_root = '/mnt/mydisk/medical_seg/fwwb_a007/data/dataset'
 transform_train = Compose([LoadImageFromFile(),
                            Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
-                           RandomCrop((224, 224)),
-                           Resize((224, 224)),
+                           RandomCrop((512, 512)),
+                           Resize((512, 512)),
                            ToTensor()])
 
 transform_test = Compose([LoadImageFromFile(),
                           Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
-                          CenterCrop((224, 224)),
-                          Resize((224, 224)),
+                          CenterCrop((512, 512)),
+                          Resize((512, 512)),
                           ToTensor()])
 
 model = ResNet(depth=50,
