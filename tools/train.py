@@ -9,7 +9,7 @@ def train_model(
         optimizer,
         device='cuda',
         num_epochs=100,
-        save_path='../../checkpoints/experiment/best_model.pth',
+        save_path='best_model.pth',
         val=False,
         val_loader=None,
         metric=None,
