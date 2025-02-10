@@ -13,15 +13,16 @@ from torch.utils.data import DataLoader
 def main(mode):
     data_root = '../../../data/dataset'
     transform_train = Compose([LoadImageFromFile(),
-                               RandomCrop((224, 224)),
+                               RandomFlip(),
+                               RandomCrop((1080, 1080)),
                                ToTensor(),
-                               Resize((224, 224)),
+                               Resize((256, 256)),
                                Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
 
     transform_val = Compose([LoadImageFromFile(),
-                             CenterCrop((224, 224)),
+                             CenterCrop((1080, 1080)),
                              ToTensor(),
-                             Resize((224, 224)),
+                             Resize((256, 256)),
                              Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
 
     model = ResNet(depth=50,
@@ -34,7 +35,7 @@ def main(mode):
                                           preload=False),
                               batch_size=32,
                               shuffle=True,
-                              num_workers=16,
+                              num_workers=4,
                               pin_memory=True
                               )
     val_loader = DataLoader(A007Dataset(txt_file="val.txt",
@@ -44,7 +45,7 @@ def main(mode):
                                         preload=False),
                             batch_size=32,
                             shuffle=True,
-                            num_workers=16,
+                            num_workers=4,
                             pin_memory=True
                             )
     loss_fn = CrossEntropyLoss(use_sigmoid=True)

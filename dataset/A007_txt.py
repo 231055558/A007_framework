@@ -196,14 +196,14 @@ class A007Dataset:
 
 if __name__ == '__main__':
     from dataset.transform import *
-    from torchvision import transforms
     import time
 
-    transform = transforms.Compose([LoadImageFromFile(),
-                                    RandomCrop((224, 224)),
-                                    ToTensor(),
-                                    Resize((224, 224)),
-                                    Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+    transform = Compose([LoadImageFromFile(),
+                         RandomFlip(),
+                         RandomCrop((224, 224)),
+                         ToTensor(),
+                         Resize((224, 224)),
+                         Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
     dataset = A007Dataset(txt_file="train.txt",
                           root_dir="/mnt/mydisk/medical_seg/fwwb_a007/data/dataset",
                           transform=transform,

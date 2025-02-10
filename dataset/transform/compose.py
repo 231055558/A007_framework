@@ -7,7 +7,9 @@ from torchvision.transforms import Compose
 #         for t in self.transforms:
 #             self.start_time = time()
 #             data = t(data)
-#             print(f"cost_time: {time() - self.start_time},name:{t}")
+#             cost_time = time() - self.start_time
+#             if cost_time > 0.01:
+#                 print(f"cost_time: {cost_time},name:{t}")
 #         print("--------------------------------------------------")
 #         return data
 #
