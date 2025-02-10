@@ -9,24 +9,23 @@ from dataset.A007_txt import A007Dataset
 from dataset.transform import *
 from torch.utils.data import DataLoader
 
-def main(mode):
 
+def main(mode):
     data_root = '../../../data/dataset'
     transform_train = Compose([LoadImageFromFile(),
-                               Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
-                               RandomCrop((512, 512)),
-                               Resize((512, 512)),
-                               ToTensor()])
+                               RandomCrop((224, 224)),
+                               ToTensor(),
+                               Resize((224, 224)),
+                               Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
 
-    transform_test = Compose([LoadImageFromFile(),
-                              Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
-                              CenterCrop((512, 512)),
-                              Resize((512, 512)),
-                              ToTensor()])
+    transform_val = Compose([LoadImageFromFile(),
+                             CenterCrop((224, 224)),
+                             ToTensor(),
+                             Resize((224, 224)),
+                             Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
 
     model = ResNet(depth=50,
                    num_classes=8)
-
 
     train_loader = DataLoader(A007Dataset(txt_file="train.txt",
                                           root_dir=data_root,
@@ -39,15 +38,15 @@ def main(mode):
                               pin_memory=True
                               )
     val_loader = DataLoader(A007Dataset(txt_file="val.txt",
-                                          root_dir=data_root,
-                                          transform=transform_test,
-                                          seed=42,
-                                          preload=False),
-                              batch_size=32,
-                              shuffle=True,
-                              num_workers=16,
-                              pin_memory=True
-                              )
+                                        root_dir=data_root,
+                                        transform=transform_val,
+                                        seed=42,
+                                        preload=False),
+                            batch_size=32,
+                            shuffle=True,
+                            num_workers=16,
+                            pin_memory=True
+                            )
     loss_fn = CrossEntropyLoss(use_sigmoid=True)
     metric = A007_Metrics(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
     optimizer = Optimizer(model_params=model.parameters(),
@@ -80,6 +79,7 @@ def main(mode):
             device='cuda'
         )
 
+
 if __name__ == '__main__':
-    mode = "val"
+    mode = "train"
     main(mode)

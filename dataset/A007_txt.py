@@ -28,7 +28,6 @@ import numpy as np
 from typing import Callable, Optional
 import torch
 from torch.utils.data import DataLoader
-from torchvision import transforms
 
 
 class ImageInfo:
@@ -185,7 +184,6 @@ class A007Dataset:
             img_info = self.image_infos[idx]
             data = self.transform(img_info)
 
-
         # # 动态应用随机增强（如 RandomHorizontalFlip）
         # if self.transform:
         #     data = self.transform(data)
@@ -198,13 +196,14 @@ class A007Dataset:
 
 if __name__ == '__main__':
     from dataset.transform import *
+    from torchvision import transforms
     import time
 
-    transform = Compose([LoadImageFromFile(),
-                         Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
-                         RandomCrop((224, 224)),
-                         Resize((224, 224)),
-                         ToTensor()])
+    transform = transforms.Compose([LoadImageFromFile(),
+                                    RandomCrop((224, 224)),
+                                    ToTensor(),
+                                    Resize((224, 224)),
+                                    Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
     dataset = A007Dataset(txt_file="train.txt",
                           root_dir="/mnt/mydisk/medical_seg/fwwb_a007/data/dataset",
                           transform=transform,
