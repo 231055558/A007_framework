@@ -56,7 +56,7 @@ def train_model(
         #     print(f'Saved best model with loss {epoch_loss:.4f}')
         if val:
             metrics = val_model(
-                model, val_loader, metric, device
+                model, val_loader, metric, model_name, device
             )
             visualizer.update_metrics(metrics)
 

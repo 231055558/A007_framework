@@ -17,12 +17,12 @@ class AttentionFC(nn.Module):
         self.num_classes = num_classes
 
     def forward(self, x):
-        p_normal = torch.sigmoid(self.fc_normal(x))
+        p_normal = self.fc_normal(x)
 
         attention_weights = self.attention(x)
         weighted_features = x * attention_weights
 
-        p_disease = torch.sigmoid(self.fc_disease(weighted_features))
+        p_disease = self.fc_disease(weighted_features)
 
         output = torch.cat([p_normal, p_disease], dim=1)
         return output
