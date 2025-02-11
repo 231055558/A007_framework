@@ -1,7 +1,7 @@
 import os
 import random
 import numpy as np
-from PIL import Image
+import cv2
 from tqdm import tqdm
 
 def read_data_label(file_path):
@@ -24,8 +24,8 @@ def calculate_mean_std(image_paths):
 
     # 遍历图片
     for img_path in tqdm(image_paths, desc="Calculating mean and std"):
-        img = Image.open(img_path).convert('RGB')
-        img = np.array(img)
+        img = cv2.imread(img_path)  # 使用 cv2 读取图片
+        img = cv2.cvtColor(img, cv2.IMREAD_COLOR)  # 转换为 RGB
         mean += img.mean(axis=(0, 1))  # 计算每通道的均值
         std += img.std(axis=(0, 1))    # 计算每通道的标准差
         total_pixels += img.shape[0] * img.shape[1]
@@ -40,8 +40,9 @@ def check_deviation(image_path, mean, std, threshold=2):
     检查单张图片的均值和标准差是否严重偏离给定值。
     threshold: 偏离的阈值，默认为 2 倍标准差。
     """
-    img = Image.open(image_path).convert('RGB')
-    img = np.array(img) / 255.0  # 归一化到 [0, 1]
+    img = cv2.imread(image_path)  # 使用 cv2 读取图片
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 转换为 RGB
+    img = img / 255.0  # 归一化到 [0, 1]
     img_mean = img.mean(axis=(0, 1))
     img_std = img.std(axis=(0, 1))
 
