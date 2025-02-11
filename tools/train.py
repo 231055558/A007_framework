@@ -17,7 +17,7 @@ def train_model(
     if val:
         assert val_loader is not None and metric is not None
     model.to(device)
-    best_loss = float('inf')
+    best_acc = float('0')
 
     for epoch in range(num_epochs):
         model.train()
@@ -44,15 +44,23 @@ def train_model(
 
         epoch_loss = running_loss / len(train_loader)
         print(f'Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss:.4f}')
-        if epoch_loss < best_loss:
-            best_loss = epoch_loss
-            torch.save(model.state_dict(), save_path)
-            print(f'Saved best model with loss {epoch_loss:.4f}')
-        if val is True:
+        # if epoch_loss < best_loss:
+        #     best_loss = epoch_loss
+        #     torch.save(model.state_dict(), save_path)
+        #     print(f'Saved best model with loss {epoch_loss:.4f}')
+        if val:
             metrics = val_model(
                 model, val_loader, metric, device
             )
-
+            mean_acc = 0
+            num_acc = 0
+            for thr in metrics:
+                num_acc += 1
+                mean_acc += metrics[thr]["accuracy"]
+            if mean_acc > best_acc:
+                best_acc = mean_acc
+                torch.save(model.state_dict(), save_path)
+                print(f'Saved best model with acc {best_acc/num_acc:.4f}')
 
 
 

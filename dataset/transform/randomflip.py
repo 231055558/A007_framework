@@ -2,7 +2,7 @@ import numpy as np
 
 from dataset.transform.basetransform import BaseTransform
 class RandomFlip(BaseTransform):
-    def __init__(self, flip_horizontal, flip_vertaical, flip_prob=0.5):
+    def __init__(self, flip_horizontal=True, flip_vertaical=True, flip_prob=0.5):
         assert 0.0 <= flip_prob <= 1.0
         self.flip_horizontal = flip_horizontal
         self.flip_vertaical = flip_vertaical
