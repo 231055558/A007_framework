@@ -17,13 +17,15 @@ def main(mode):
                                RandomCrop((1080, 1080)),
                                ToTensor(),
                                Resize((256, 256)),
-                               Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+                               Preprocess(mean=(26.79446452, 48.51940625, 76.53684116),
+                                          std=(27.8611716, 47.70409773, 72.05617777))])
 
     transform_val = Compose([LoadImageFromFile(),
                              CenterCrop((1080, 1080)),
                              ToTensor(),
                              Resize((256, 256)),
-                             Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+                             Preprocess(mean=(26.79446452, 48.51940625, 76.53684116),
+                                        std=(27.8611716, 47.70409773, 72.05617777))])
 
     model = ResNet(depth=50,
                    num_classes=8)
