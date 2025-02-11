@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experiment Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .log {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .images img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Experiment Visualization</h1>
+    <h2>Logs</h2>
+    <div class="log">
+        <pre>{{ log_content }}</pre>
+    </div>
+    <h2>Charts & Error Samples</h2>
+    <div class="images">
+        {% for image in images %}
+        <img src="{{ url_for('images', filename=image) }}" alt="{{ image }}">
+        {% endfor %}
+    </div>
+</body>
+</html>

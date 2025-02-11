@@ -7,13 +7,16 @@ def train_model(
         train_loader,
         loss_fn,
         optimizer,
+        visualizer,
         device='cuda',
+        model_name="default_model",
         num_epochs=100,
         save_path='best_model.pth',
         val=False,
         val_loader=None,
-        metric=None,
+        metric=None
 ):
+    visualizer.log("-----------start training--------------")
     if val:
         assert val_loader is not None and metric is not None
     model.to(device)
@@ -43,7 +46,10 @@ def train_model(
 
 
         epoch_loss = running_loss / len(train_loader)
-        print(f'Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss:.4f}')
+        visualizer.log(f'Epoch {epoch+1}/{num_epochs} loss: {epoch_loss:.4f}')
+        visualizer.update_loss(epoch_loss)
+
+        # print(f'Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss:.4f}')
         # if epoch_loss < best_loss:
         #     best_loss = epoch_loss
         #     torch.save(model.state_dict(), save_path)
@@ -52,6 +58,8 @@ def train_model(
             metrics = val_model(
                 model, val_loader, metric, device
             )
+            visualizer.update_metrics(metrics)
+
             mean_acc = 0
             num_acc = 0
             for thr in metrics:

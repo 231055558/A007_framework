@@ -6,6 +6,7 @@ def val_model(
         model,
         val_loader,
         metric,
+        model_name="default_model",
         device='cuda'
 ):
     model.to(device)
