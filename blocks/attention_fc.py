@@ -25,3 +25,4 @@ class AttentionFC(nn.Module):
         p_disease = torch.sigmoid(self.fc_disease(weighted_features))
 
         output = torch.cat([p_normal, p_disease], dim=1)
+        return output

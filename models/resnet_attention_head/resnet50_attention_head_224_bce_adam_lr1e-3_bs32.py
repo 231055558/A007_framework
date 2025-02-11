@@ -1,5 +1,6 @@
 from models.load import load_model_weights
 from networks.resnet import ResNet
+from networks.resnet_attention_head import ResNetAttentionHead
 from tools.train import train_model
 from tools.val import val_model
 from loss.cross_entropy import CrossEntropyLoss
@@ -27,7 +28,7 @@ def main(mode):
                              Preprocess(mean=(26.79446452, 48.51940625, 76.53684116),
                                         std=(27.8611716, 47.70409773, 72.05617777))])
 
-    model = ResNet(depth=50,
+    model = ResNetAttentionHead(depth=50,
                    num_classes=8)
 
     train_loader = DataLoader(A007Dataset(txt_file="train.txt",

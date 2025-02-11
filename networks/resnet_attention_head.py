@@ -1,9 +1,11 @@
 from torch import nn
+
+from blocks.attention_fc import AttentionFC
 from blocks.conv import Conv2dModule
 from blocks.resnet import Bottleneck
 
 
-class ResNetCompositeHead(nn.Module):
+class ResNetAttentionHead(nn.Module):
     arch_settings = {
         50: (Bottleneck, (3, 4, 6, 3)),
         101: (Bottleneck, (3, 4, 23, 3)),
@@ -19,7 +21,7 @@ class ResNetCompositeHead(nn.Module):
                  norm='batch_norm',
                  activation='relu',
                  dilation=1):
-        super(ResNetCompositeHead, self).__init__()
+        super(ResNetAttentionHead, self).__init__()
 
         # 检查 depth 是否支持
         if depth not in self.arch_settings:
@@ -84,7 +86,7 @@ class ResNetCompositeHead(nn.Module):
 
         # 全局平均池化和分类器
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(base_channels * 8 * block.expansion, num_classes)
+        self.fc = AttentionFC(in_features=base_channels * 8 * block.expansion, num_classes=num_classes)
 
     def _make_layer(self,
                     block,
