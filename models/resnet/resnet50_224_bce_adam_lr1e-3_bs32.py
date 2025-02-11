@@ -8,79 +8,86 @@ from optims.optimizer import Optimizer
 from dataset.A007_txt import A007Dataset
 from dataset.transform import *
 from torch.utils.data import DataLoader
+from visualization.visualizer import Visualizer
 
 
-def main(mode):
-    data_root = '../../../data/dataset'
-    transform_train = Compose([LoadImageFromFile(),
-                               RandomFlip(),
-                               RandomCrop((1080, 1080)),
-                               ToTensor(),
-                               Resize((256, 256)),
-                               Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+class ResNet50_224_Bce_Adam_Lr1e_3_Bs32:
+    def __init__(self):
+        self.data_root = '../../../data/dataset'
+        self.model_name = 'ResNet50_224_Bce_Adam_Lr1e_3_Bs32'
+        self.transform_train = Compose([LoadImageFromFile(),
+                                        RandomFlip(),
+                                        RandomCrop((1080, 1080)),
+                                        ToTensor(),
+                                        Resize((256, 256)),
+                                        Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
 
-    transform_val = Compose([LoadImageFromFile(),
-                             CenterCrop((1080, 1080)),
-                             ToTensor(),
-                             Resize((256, 256)),
-                             Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+        self.transform_val = Compose([LoadImageFromFile(),
+                                      CenterCrop((1080, 1080)),
+                                      ToTensor(),
+                                      Resize((256, 256)),
+                                      Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+        self.model = ResNet(depth=50,
+                            num_classes=8)
 
-    model = ResNet(depth=50,
-                   num_classes=8)
-
-    train_loader = DataLoader(A007Dataset(txt_file="train.txt",
-                                          root_dir=data_root,
-                                          transform=transform_train,
-                                          seed=42,
-                                          preload=False),
-                              batch_size=32,
-                              shuffle=True,
-                              num_workers=4,
-                              pin_memory=True
-                              )
-    val_loader = DataLoader(A007Dataset(txt_file="val.txt",
-                                        root_dir=data_root,
-                                        transform=transform_val,
-                                        seed=42,
-                                        preload=False),
-                            batch_size=32,
-                            shuffle=True,
-                            num_workers=4,
-                            pin_memory=True
-                            )
-    loss_fn = CrossEntropyLoss(use_sigmoid=True)
-    metric = A007_Metrics(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
-    optimizer = Optimizer(model_params=model.parameters(),
-                          optimizer='adam',
-                          lr=1e-3,
-                          weight_decay=1e-4
-                          )
-    if mode == "train":
-        pretrain_ckp = "../../../checkpoints/resnet50.pth"
-        load_model_weights(model, pretrain_ckp)
+        self.train_loader = DataLoader(A007Dataset(txt_file="train.txt",
+                                                   root_dir=self.data_root,
+                                                   transform=self.transform_train,
+                                                   seed=42,
+                                                   preload=False),
+                                       batch_size=32,
+                                       shuffle=True,
+                                       num_workers=4,
+                                       pin_memory=True
+                                       )
+        self.val_loader = DataLoader(A007Dataset(txt_file="val.txt",
+                                                 root_dir=self.data_root,
+                                                 transform=self.transform_val,
+                                                 seed=42,
+                                                 preload=False),
+                                     batch_size=32,
+                                     shuffle=True,
+                                     num_workers=4,
+                                     pin_memory=True
+                                     )
+        self.loss_fn = CrossEntropyLoss(use_sigmoid=True)
+        self.metric = A007_Metrics(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
+        self.optimizer = Optimizer(model_params=self.model.parameters(),
+                                   optimizer='adam',
+                                   lr=1e-3,
+                                   weight_decay=1e-4
+                                   )
+        self.visualizer = Visualizer(experiment_name=self.model_name, metrics=self.metric)
+        self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
+    def train(self, epoch=100, val=True):
+        load_model_weights(self.model, self.pretrain_ckp)
         train_model(
-            model=model,
-            train_loader=train_loader,
-            val_loader=val_loader,
-            loss_fn=loss_fn,
-            metric=metric,
-            optimizer=optimizer,
+            model=self.model,
+            model_name=self.model_name,
+            train_loader=self.train_loader,
+            val_loader=self.val_loader,
+            loss_fn=self.loss_fn,
+            metric=self.metric,
+            optimizer=self.optimizer,
             device='cuda',
-            num_epochs=100,
+            num_epochs=epoch,
             save_path='best_model.pth',
-            val=True
+            val=val,
+            visualizer=self.visualizer
         )
-    if mode == "val":
+
+    def test(self):
         trained_ckp = "../../../checkpoints/resnet50_224_bce_adam_lr1e-3_bs32_checkpoint/best_model.pth"
-        load_model_weights(model, trained_ckp)
+        load_model_weights(self.model, trained_ckp)
         val_model(
-            model=model,
-            val_loader=val_loader,
-            metric=metric,
+            model=self.model,
+            model_name=self.model_name,
+            val_loader=self.val_loader,
+            metric=self.metric,
             device='cuda'
         )
 
 
 if __name__ == '__main__':
-    mode = "train"
-    main(mode)
+    model = ResNet50_224_Bce_Adam_Lr1e_3_Bs32()
+    model.train(100)
