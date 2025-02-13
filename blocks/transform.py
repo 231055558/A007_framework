@@ -58,7 +58,7 @@ class PatchEmbed(nn.Module):
         img_size (int or tuple): Input image size (height, width).
         patch_size (int or tuple): Patch size (height, width).
         in_channels (int): Number of input channels (default: 3 for RGB).
-        embed_dims (int): Embedding dimension for each patch.
+        embed_dim (int): Embedding dimension for each patch.
         norm_layer (nn.Module, optional): Normalization layer (default: None).
         flatten (bool): Whether to flatten the patch embeddings (default: True).
     """
@@ -68,7 +68,7 @@ class PatchEmbed(nn.Module):
         img_size=224,
         patch_size=16,
         in_channels=3,
-        embed_dims=768,
+        embed_dim=768,
         norm_layer=None,
         flatten=True,
     ):
@@ -76,7 +76,7 @@ class PatchEmbed(nn.Module):
         self.img_size = (img_size, img_size) if isinstance(img_size, int) else img_size
         self.patch_size = (patch_size, patch_size) if isinstance(patch_size, int) else patch_size
         self.in_channels = in_channels
-        self.embed_dim = embed_dims
+        self.embed_dim = embed_dim
         self.flatten = flatten
 
         # Calculate number of patches
@@ -89,13 +89,13 @@ class PatchEmbed(nn.Module):
         # Projection: Convolution to convert patches into embeddings
         self.proj = nn.Conv2d(
             in_channels=in_channels,
-            out_channels=embed_dims,
+            out_channels=embed_dim,
             kernel_size=patch_size,
             stride=patch_size,
         )
 
         # Optional normalization layer
-        self.norm = norm_layer(embed_dims) if norm_layer is not None else None
+        self.norm = norm_layer(embed_dim) if norm_layer is not None else None
 
     def forward(self, x):
         """

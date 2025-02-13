@@ -1,6 +1,6 @@
 from torch import nn
 
-from blocks.attention_fc import AttentionFC
+from blocks.head import AttentionFC
 from blocks.conv import Conv2dModule
 from blocks.resnet import Bottleneck
 
