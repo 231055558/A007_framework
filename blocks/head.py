@@ -1,6 +1,9 @@
+import torch.nn.functional as F
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+from typing import Optional
+
+from blocks.activation import build_activation
 
 
 class AttentionFC(nn.Module):
@@ -27,9 +30,7 @@ class AttentionFC(nn.Module):
         output = torch.cat([p_normal, p_disease], dim=1)
         return output
 
-import torch
-import torch.nn as nn
-from typing import Optional
+
 
 class VisionTransformerClsHead(nn.Module):
     """
@@ -59,34 +60,10 @@ class VisionTransformerClsHead(nn.Module):
         if self.hidden_dim is None:
             self.head = nn.Linear(self.in_channels, self.num_classes)
         else:
-            self.pre_logits = nn.Linear(self.in_channels, self.hidden_dim)
-            self.act = self._build_activation(act_cfg)
+            self.fc_pre_logits = nn.Linear(self.in_channels, self.hidden_dim)
+            self.act = build_activation(act_cfg)
             self.head = nn.Linear(self.hidden_dim, self.num_classes)
 
-        # Initialize weights
-        self.init_weights()
-
-    def _build_activation(self, act_cfg: Optional[dict]) -> nn.Module:
-        """
-        Build activation function based on configuration.
-
-        Args:
-            act_cfg (Optional[dict]): Activation function configuration.
-
-        Returns:
-            nn.Module: Activation function.
-        """
-        if act_cfg is None:
-            return nn.Identity()
-        act_type = act_cfg.get('type', 'Tanh')
-        if act_type == 'Tanh':
-            return nn.Tanh()
-        elif act_type == 'ReLU':
-            return nn.ReLU()
-        elif act_type == 'GELU':
-            return nn.GELU()
-        else:
-            raise ValueError(f"Unsupported activation type: {act_type}")
 
     def pre_logits(self, feats: torch.Tensor) -> torch.Tensor:
         """
@@ -102,8 +79,8 @@ class VisionTransformerClsHead(nn.Module):
         cls_token = feats[:, 0]
 
         # Apply hidden layer and activation if exists
-        if hasattr(self, 'pre_logits'):
-            cls_token = self.pre_logits(cls_token)
+        if hasattr(self, 'fc_pre_logits'):
+            cls_token = self.fc_pre_logits(cls_token)
             cls_token = self.act(cls_token)
 
         return cls_token

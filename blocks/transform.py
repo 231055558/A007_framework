@@ -68,7 +68,7 @@ class PatchEmbed(nn.Module):
         img_size=224,
         patch_size=16,
         in_channels=3,
-        embed_dim=768,
+        embed_dims=768,
         norm_layer=None,
         flatten=True,
     ):
@@ -76,7 +76,7 @@ class PatchEmbed(nn.Module):
         self.img_size = (img_size, img_size) if isinstance(img_size, int) else img_size
         self.patch_size = (patch_size, patch_size) if isinstance(patch_size, int) else patch_size
         self.in_channels = in_channels
-        self.embed_dim = embed_dim
+        self.embed_dim = embed_dims
         self.flatten = flatten
 
         # Calculate number of patches
@@ -89,7 +89,7 @@ class PatchEmbed(nn.Module):
         # Projection: Convolution to convert patches into embeddings
         self.proj = nn.Conv2d(
             in_channels=in_channels,
-            out_channels=embed_dim,
+            out_channels=embed_dims,
             kernel_size=patch_size,
             stride=patch_size,
         )

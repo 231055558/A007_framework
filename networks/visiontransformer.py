@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+
+from blocks.head import VisionTransformerClsHead
 from blocks.transform import PatchEmbed, TransformerEncoderLayer, resize_pos_embed
 
 
@@ -98,6 +100,7 @@ class VisionTransformer(nn.Module):
         img_size=224,
         patch_size=16,
         in_channels=3,
+        num_classes=1000,
         out_indices=None,
         out_type='cls_token',
         drop_rate=0.,
@@ -157,6 +160,14 @@ class VisionTransformer(nn.Module):
 
         # Final Normalization
         self.final_norm = nn.LayerNorm(self.arch_settings['embed_dims'])
+
+        self.cls_head = VisionTransformerClsHead(
+            num_classes=num_classes,
+            in_channels=self.arch_settings['embed_dims'],
+            hidden_dim=None,
+            act_cfg={'type': "GELU"}
+        )
+
 
     def _format_output(self, x, patch_resolution):
         """
@@ -226,7 +237,10 @@ class VisionTransformer(nn.Module):
             if i in self.out_indices:
                 outs.append(self._format_output(x, patch_resolution))
 
-        return tuple(outs)
+        cls_score = self.cls_head(x)
+        return cls_score
+
+        # return tuple(outs)
 
 
 if __name__ == '__main__':

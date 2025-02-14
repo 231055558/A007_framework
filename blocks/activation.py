@@ -17,5 +17,7 @@ def build_activation(act_cfg):
         return nn.GELU()
     elif act_type == 'ReLU':
         return nn.ReLU()
+    elif act_type == 'Tanh':
+        return nn.Tanh()
     else:
         raise ValueError(f"Unsupported activation type: {act_type}")
