@@ -1,36 +1,38 @@
+from torch.utils.data import DataLoader
+from dataset.A007_txt import A007Dataset
+from dataset.transform import *
+from loss.cross_entropy import CrossEntropyLoss
+from metrics.a007_metric import A007_Metrics
 from models.load import load_model_weights
-from networks.resnet_attention_head import ResNetAttentionHead
+from networks.visiontransformer import VisionTransformer
+from optims.optimizer import Optimizer
 from tools.predict import predict_model
 from tools.train import train_model
 from tools.val import val_model
-from loss.cross_entropy import CrossEntropyLoss
-from metrics.a007_metric import A007_Metrics
-from optims.optimizer import Optimizer
-from dataset.A007_txt import A007Dataset
-from dataset.transform import *
-from torch.utils.data import DataLoader
 from visualization.visualizer import Visualizer
 
 
-class ResNet50_Attention_224_Bce_Adam_Lr1e_3_Bs32:
+class VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32:
     def __init__(self):
+        img_size = 224
+        self.model = VisionTransformer(arch='base',
+                                       img_size=img_size,
+                                       patch_size=32,
+                                       num_classes=8,
+                                       drop_rate=0.1)
         self.data_root = '../../../data/dataset'
-        self.model_name = 'ResNet50_224_Bce_Adam_Lr1e_3_Bs32'
+        self.model_name = 'VisionTransformer'
         self.transform_train = Compose([LoadImageFromFile(),
                                         RandomFlip(),
                                         RandomCrop((1080, 1080)),
                                         ToTensor(),
-                                        Resize((256, 256)),
+                                        Resize((img_size, img_size)),
                                         Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
-
         self.transform_val = Compose([LoadImageFromFile(),
                                       CenterCrop((1080, 1080)),
                                       ToTensor(),
-                                      Resize((256, 256)),
+                                      Resize((img_size, img_size)),
                                       Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
-        self.model = ResNetAttentionHead(depth=50,
-                                    num_classes=8)
-
         self.train_loader = DataLoader(A007Dataset(txt_file="train.txt",
                                                    root_dir=self.data_root,
                                                    transform=self.transform_train,
@@ -59,8 +61,8 @@ class ResNet50_Attention_224_Bce_Adam_Lr1e_3_Bs32:
                                    weight_decay=1e-4
                                    )
         self.visualizer = Visualizer(experiment_name=self.model_name, metrics=self.metric)
-        self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
-        # self.pretrain_ckp = "./best_model.pth"
+        self.pretrain_ckp = "../../../checkpoints/vit-base.pth"
+
     def train(self, epoch=100, val=True):
         load_model_weights(self.model, self.pretrain_ckp)
         train_model(
@@ -79,8 +81,8 @@ class ResNet50_Attention_224_Bce_Adam_Lr1e_3_Bs32:
         )
 
     def val(self):
-        trained_ckp = "./best_model.pth"
-        load_model_weights(self.model, trained_ckp)
+        # trained_ckp = "./best_model.pth"
+        # load_model_weights(self.model, trained_ckp)
         val_model(
             model=self.model,
             model_name=self.model_name,
@@ -88,9 +90,10 @@ class ResNet50_Attention_224_Bce_Adam_Lr1e_3_Bs32:
             metric=self.metric,
             device='cuda'
         )
+
     def predict_model(self):
-        trained_ckp = "./best_model.pth"
-        load_model_weights(self.model, trained_ckp)
+        # trained_ckp = "./best_model.pth"
+        # load_model_weights(self.model, trained_ckp)
         predict_model(
             model=self.model,
             test_loader=self.val_loader,
@@ -102,5 +105,5 @@ class ResNet50_Attention_224_Bce_Adam_Lr1e_3_Bs32:
 
 
 if __name__ == '__main__':
-    model = ResNet50_Attention_224_Bce_Adam_Lr1e_3_Bs32()
-    model.train(100)
+    model = VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32()
+    model.train()

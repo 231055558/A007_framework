@@ -99,8 +99,12 @@ class ModelVisualizer(tk.Tk):
 
 
 if __name__ == "__main__":
-    from networks.resnet import ResNet
-    model = ResNet(depth=50,
-                   num_classes=8)
+    from networks.visiontransformer import VisionTransformer
+
+    model = VisionTransformer(arch='base',
+                              img_size=224,
+                              patch_size=32,
+                              num_classes=8,
+                              drop_rate=0.1)
     app = ModelVisualizer(model=model)
     app.mainloop()

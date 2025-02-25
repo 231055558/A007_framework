@@ -1,11 +1,9 @@
 from torch import nn
-
-from blocks.head import AttentionFC
 from blocks.conv import Conv2dModule
 from blocks.resnet import Bottleneck
 
 
-class ResNetAttentionHead(nn.Module):
+class ResNet_Color_Merge(nn.Module):
     arch_settings = {
         50: (Bottleneck, (3, 4, 6, 3)),
         101: (Bottleneck, (3, 4, 23, 3)),
@@ -14,14 +12,14 @@ class ResNetAttentionHead(nn.Module):
 
     def __init__(self,
                  depth,
-                 in_channels=3,
+                 in_channels=6,
                  stem_channels=64,
                  base_channels=64,
                  num_classes=1000,
                  norm='batch_norm',
                  activation='relu',
                  dilation=1):
-        super(ResNetAttentionHead, self).__init__()
+        super(ResNet_Color_Merge, self).__init__()
 
         # 检查 depth 是否支持
         if depth not in self.arch_settings:
@@ -86,7 +84,7 @@ class ResNetAttentionHead(nn.Module):
 
         # 全局平均池化和分类器
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = AttentionFC(in_features=base_channels * 8 * block.expansion, num_classes=num_classes)
+        self.fc = nn.Linear(base_channels * 8 * block.expansion, num_classes)
 
     def _make_layer(self,
                     block,
@@ -149,3 +147,13 @@ class ResNetAttentionHead(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc(x)
         return x
+
+
+if __name__ == '__main__':
+    import torch
+    resnet50 = ResNet_Color_Merge(depth=50, num_classes=1000)
+
+    x = torch.randn(1, 6, 224, 224)
+
+    output = resnet50(x)
+    print(output.shape)

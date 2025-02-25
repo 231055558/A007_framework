@@ -1,11 +1,9 @@
 from torch import nn
-
-from blocks.head import AttentionFC
 from blocks.conv import Conv2dModule
 from blocks.resnet import Bottleneck
 
 
-class ResNetAttentionHead(nn.Module):
+class ResNet_Stem_Merge(nn.Module):
     arch_settings = {
         50: (Bottleneck, (3, 4, 6, 3)),
         101: (Bottleneck, (3, 4, 23, 3)),
@@ -21,7 +19,7 @@ class ResNetAttentionHead(nn.Module):
                  norm='batch_norm',
                  activation='relu',
                  dilation=1):
-        super(ResNetAttentionHead, self).__init__()
+        super(ResNet_Stem_Merge, self).__init__()
 
         # 检查 depth 是否支持
         if depth not in self.arch_settings:
@@ -32,7 +30,7 @@ class ResNetAttentionHead(nn.Module):
         self.stem = nn.Sequential(
             Conv2dModule(
                 in_channels=in_channels,
-                out_channels=stem_channels,
+                out_channels=stem_channels // 2,
                 kernel_size=7,
                 stride=2,
                 padding=3,
@@ -86,7 +84,7 @@ class ResNetAttentionHead(nn.Module):
 
         # 全局平均池化和分类器
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = AttentionFC(in_features=base_channels * 8 * block.expansion, num_classes=num_classes)
+        self.fc = nn.Linear(base_channels * 8 * block.expansion, num_classes)
 
     def _make_layer(self,
                     block,
@@ -139,8 +137,10 @@ class ResNetAttentionHead(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
-        x = self.stem(x)
+    def forward(self, x1, x2):
+        x1 = self.stem(x1)
+        x2 = self.stem(x2)
+        x = torch.cat((x1, x2), dim=1)
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
@@ -149,3 +149,14 @@ class ResNetAttentionHead(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc(x)
         return x
+
+
+if __name__ == '__main__':
+    import torch
+    resnet50 = ResNet_Stem_Merge(depth=50, num_classes=1000)
+
+    x1 = torch.randn(1, 3, 224, 224)
+    x2 = torch.randn(1, 3, 224, 224)
+
+    output = resnet50(x1, x2)
+    print(output.shape)
