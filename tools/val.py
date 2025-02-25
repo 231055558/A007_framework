@@ -45,7 +45,7 @@ def val_color_merge_model(
     with torch.no_grad():
         progress_bar = tqdm(val_loader, desc='Validation')
         for inputs_l, inputs_r, labels in progress_bar:
-            combined_inputs = torch.cat((inputs_l, inputs_r), dim=0)
+            combined_inputs = torch.cat((inputs_l, inputs_r), dim=1)
             inputs = combined_inputs.to(device)
             labels = labels.to(device)
 
