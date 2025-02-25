@@ -14,7 +14,7 @@ from visualization.visualizer import Visualizer
 
 class ResNet50_Color_Merge_224_Bce_Adam_Lr1e_3_Bs32:
     def __init__(self):
-        self.data_root = '../../../data/dataset'
+        self.data_root = '../../../data/data_merge'
         self.model_name = 'ResNet50_224_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
                                         RandomFlip(),

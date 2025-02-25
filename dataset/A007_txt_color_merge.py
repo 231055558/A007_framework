@@ -152,8 +152,8 @@ class A007Dataset:
                 parts = line.strip().split()
                 if len(parts) != 2:
                     continue
-                image_path_l = os.path.join(self.root_dir, 'train' if 'train' in txt_file else 'val', parts[0])
-                image_path_r = os.path.join(self.root_dir, 'train' if 'train' in txt_file else 'val', parts[1])
+                image_path_l = os.path.join(self.root_dir, 'images', parts[0])
+                image_path_r = os.path.join(self.root_dir, 'images', parts[1])
                 label = [int(x) for x in parts[2]]
                 self.image_infos.append([ImageInfo(image_path_l, label), ImageInfo(image_path_r, label)])
 

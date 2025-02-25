@@ -14,9 +14,14 @@ from visualization.visualizer import Visualizer
 
 class VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32:
     def __init__(self):
+        img_size = 224
+        self.model = VisionTransformer(arch='base',
+                                       img_size=img_size,
+                                       patch_size=32,
+                                       num_classes=8,
+                                       drop_rate=0.1)
         self.data_root = '../../../data/dataset'
         self.model_name = 'VisionTransformer'
-        img_size = 224
         self.transform_train = Compose([LoadImageFromFile(),
                                         RandomFlip(),
                                         RandomCrop((1080, 1080)),
@@ -28,10 +33,6 @@ class VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32:
                                       ToTensor(),
                                       Resize((img_size, img_size)),
                                       Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
-        self.model =VisionTransformer(arch='small',
-                                      img_size=img_size,
-                                      num_classes=8,
-                                      drop_rate=0.1)
         self.train_loader = DataLoader(A007Dataset(txt_file="train.txt",
                                                    root_dir=self.data_root,
                                                    transform=self.transform_train,
@@ -42,7 +43,7 @@ class VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32:
                                        num_workers=4,
                                        pin_memory=True
                                        )
-        self.val_loader = DataLoader(A007Dataset(txt_file="train.txt",
+        self.val_loader = DataLoader(A007Dataset(txt_file="val.txt",
                                                  root_dir=self.data_root,
                                                  transform=self.transform_val,
                                                  seed=42,
@@ -60,9 +61,10 @@ class VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32:
                                    weight_decay=1e-4
                                    )
         self.visualizer = Visualizer(experiment_name=self.model_name, metrics=self.metric)
+        self.pretrain_ckp = "../../../checkpoints/vit-base.pth"
 
     def train(self, epoch=100, val=True):
-        # load_model_weights(self.model, self.pretrain_ckp)
+        load_model_weights(self.model, self.pretrain_ckp)
         train_model(
             model=self.model,
             model_name=self.model_name,
@@ -100,6 +102,7 @@ class VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32:
             device='cuda',
             output_folder="./output"
         )
+
 
 if __name__ == '__main__':
     model = VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32()
