@@ -6,7 +6,7 @@ from tools.val import val_model
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.a007_metric import A007_Metrics
 from optims.optimizer import Optimizer
-from dataset.A007_txt_color_merge import A007Dataset
+from dataset.A007_txt_merge_model import A007Dataset
 from dataset.transform import *
 from torch.utils.data import DataLoader
 from visualization.visualizer import Visualizer

@@ -25,19 +25,21 @@ from typing import Callable, Optional
 import torch
 from torch.utils.data import DataLoader
 
+from dataset.A007_txt import ImageInfo
 
-class ImageInfo:
-    def __init__(self, img_path_l: str, img_path_r: str, label: list):
-        self.data = {'image_path_l': img_path_l, 'image_path_r': img_path_r, 'label': label}
 
-    def __getitem__(self, key):
-        return self.data[key]
-
-    def __setitem__(self, key, value):
-        self.data[key] = value
-
-    def __repr__(self):
-        return f"ImageInfo\n {self.data}"
+# class ImageInfo:
+#     def __init__(self, img_path_l: str, img_path_r: str, label: list):
+#         self.data = {'image_path_l': img_path_l, 'image_path_r': img_path_r, 'label': label}
+#
+#     def __getitem__(self, key):
+#         return self.data[key]
+#
+#     def __setitem__(self, key, value):
+#         self.data[key] = value
+#
+#     def __repr__(self):
+#         return f"ImageInfo\n {self.data}"
 
 
 # class A007Dataset:
@@ -150,7 +152,7 @@ class A007Dataset:
         with open(txt_path, 'r') as f:
             for line in f:
                 parts = line.strip().split()
-                if len(parts) != 2:
+                if len(parts) != 3:
                     continue
                 image_path_l = os.path.join(self.root_dir, 'images', parts[0])
                 image_path_r = os.path.join(self.root_dir, 'images', parts[1])
