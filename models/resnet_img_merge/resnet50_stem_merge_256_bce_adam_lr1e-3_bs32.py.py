@@ -1,8 +1,8 @@
 from models.load import load_model_weights
-from networks.resnet import ResNet
+from networks.resnet_stem_merge import ResNet_Stem_Merge
 from tools.predict import predict_model
-from tools.train import train_output_merge_model
-from tools.val import val_model
+from tools.train import train_stem_merge_model
+from tools.val import val_stem_merge_model
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.a007_metric import A007_Metrics
 from optims.optimizer import Optimizer
@@ -12,9 +12,9 @@ from torch.utils.data import DataLoader
 from visualization.visualizer import Visualizer
 
 
-class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
+class ResNet50_Stem_Merge_224_Bce_Adam_Lr1e_3_Bs32:
     def __init__(self):
-        self.data_root = '../../../data/dataset'
+        self.data_root = 'D:\\code\\A07\\dataset'
         self.model_name = 'ResNet50_224_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
                                         RandomFlip(),
@@ -28,7 +28,7 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
                                       ToTensor(),
                                       Resize((256, 256)),
                                       Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
-        self.model = ResNet(depth=50,
+        self.model = ResNet_Stem_Merge(depth=50,
                             num_classes=8)
 
         self.train_loader = DataLoader(A007Dataset(txt_file="train.txt",
@@ -59,12 +59,12 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
                                    weight_decay=1e-4
                                    )
         self.visualizer = Visualizer(experiment_name=self.model_name, metrics=self.metric)
-        # self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
-        self.pretrain_ckp = "./best_model.pth"
+        self.pretrain_ckp = "D:\\code\\A07\\model\\resnet50.pth"
+        #self.pretrain_ckp = "./best_model.pth"
 
-    def train(self, epoch=100, val=True):
+    def train(self, epoch=2, val=True):
         load_model_weights(self.model, self.pretrain_ckp)
-        train_output_merge_model(
+        train_stem_merge_model(
             model=self.model,
             model_name=self.model_name,
             train_loader=self.train_loader,
@@ -82,7 +82,7 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
     def val(self):
         trained_ckp = "./best_model.pth"
         load_model_weights(self.model, trained_ckp)
-        val_model(
+        val_stem_merge_model(
             model=self.model,
             model_name=self.model_name,
             val_loader=self.val_loader,
@@ -104,5 +104,6 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
 
 
 if __name__ == '__main__':
-    model = ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32()
+    model = ResNet50_Stem_Merge_224_Bce_Adam_Lr1e_3_Bs32()
+    #model.train()
     model.val()

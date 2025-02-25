@@ -2,7 +2,7 @@ from models.load import load_model_weights
 from networks.resnet import ResNet
 from tools.predict import predict_model
 from tools.train import train_output_merge_model
-from tools.val import val_model
+from tools.val import val_output_merge_model
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.a007_metric import A007_Metrics
 from optims.optimizer import Optimizer
@@ -14,7 +14,7 @@ from visualization.visualizer import Visualizer
 
 class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
     def __init__(self):
-        self.data_root = '../../../data/dataset'
+        self.data_root = 'D:\\code\\A07\\dataset'
         self.model_name = 'ResNet50_224_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
                                         RandomFlip(),
@@ -59,10 +59,10 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
                                    weight_decay=1e-4
                                    )
         self.visualizer = Visualizer(experiment_name=self.model_name, metrics=self.metric)
-        # self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
-        self.pretrain_ckp = "./best_model.pth"
+        self.pretrain_ckp = "D:\\code\\A07\\model\\resnet50.pth"
+        #self.pretrain_ckp = "./best_model.pth"
 
-    def train(self, epoch=100, val=True):
+    def train(self, epoch=1, val=True):
         load_model_weights(self.model, self.pretrain_ckp)
         train_output_merge_model(
             model=self.model,
@@ -82,7 +82,7 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
     def val(self):
         trained_ckp = "./best_model.pth"
         load_model_weights(self.model, trained_ckp)
-        val_model(
+        val_output_merge_model(
             model=self.model,
             model_name=self.model_name,
             val_loader=self.val_loader,
@@ -105,4 +105,5 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
 
 if __name__ == '__main__':
     model = ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32()
+    #model.train()
     model.val()
