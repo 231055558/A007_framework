@@ -59,7 +59,7 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
                                    weight_decay=1e-4
                                    )
         self.visualizer = Visualizer(experiment_name=self.model_name, metrics=self.metric)
-        self.pretrain_ckp = "D:\\code\\A07\\model\\resnet50.pth"
+        self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
         #self.pretrain_ckp = "./best_model.pth"
 
     def train(self, epoch=1, val=True):
