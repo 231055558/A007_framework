@@ -1,37 +1,36 @@
-from torch.utils.data import DataLoader
-from dataset.A007_txt import A007Dataset
-from dataset.transform import *
+from models.load import load_model_weights
+from networks.resnet_color_merge import ResNet_Color_Merge
+from tools.predict import predict_model
+from tools.train import train_color_merge_model
+from tools.val import val_color_merge_model
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.a007_metric import A007_Metrics
-from models.load import load_model_weights
-from networks.visiontransformer import VisionTransformer
 from optims.optimizer import Optimizer
-from tools.predict import predict_model
-from tools.train import train_model
-from tools.val import val_model
+from dataset.A007_txt_merge_model import A007Dataset
+from dataset.transform import *
+from torch.utils.data import DataLoader
 from visualization.visualizer import Visualizer
 
 
-class VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32:
+class ResNet50_Color_Merge_224_Bce_Adam_Lr1e_3_Bs32:
     def __init__(self):
-        self.data_root = '../../../data/dataset'
-        self.model_name = 'VisionTransformer'
-        img_size = 224
+        self.data_root = '../../../data/data_merge'
+        self.model_name = 'ResNet50_224_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
                                         RandomFlip(),
                                         RandomCrop((1080, 1080)),
                                         ToTensor(),
-                                        Resize((img_size, img_size)),
+                                        Resize((256, 256)),
                                         Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+
         self.transform_val = Compose([LoadImageFromFile(),
                                       CenterCrop((1080, 1080)),
                                       ToTensor(),
-                                      Resize((img_size, img_size)),
+                                      Resize((256, 256)),
                                       Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
-        self.model =VisionTransformer(arch='small',
-                                      img_size=img_size,
-                                      num_classes=8,
-                                      drop_rate=0.1)
+        self.model = ResNet_Color_Merge(depth=50,
+                                        num_classes=8)
+
         self.train_loader = DataLoader(A007Dataset(txt_file="train.txt",
                                                    root_dir=self.data_root,
                                                    transform=self.transform_train,
@@ -42,7 +41,7 @@ class VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32:
                                        num_workers=4,
                                        pin_memory=True
                                        )
-        self.val_loader = DataLoader(A007Dataset(txt_file="train.txt",
+        self.val_loader = DataLoader(A007Dataset(txt_file="val.txt",
                                                  root_dir=self.data_root,
                                                  transform=self.transform_val,
                                                  seed=42,
@@ -60,10 +59,12 @@ class VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32:
                                    weight_decay=1e-4
                                    )
         self.visualizer = Visualizer(experiment_name=self.model_name, metrics=self.metric)
+        self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
+        # self.pretrain_ckp = "./best_model.pth"
 
     def train(self, epoch=100, val=True):
-        # load_model_weights(self.model, self.pretrain_ckp)
-        train_model(
+        load_model_weights(self.model, self.pretrain_ckp)
+        train_color_merge_model(
             model=self.model,
             model_name=self.model_name,
             train_loader=self.train_loader,
@@ -79,9 +80,9 @@ class VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32:
         )
 
     def val(self):
-        # trained_ckp = "./best_model.pth"
-        # load_model_weights(self.model, trained_ckp)
-        val_model(
+        trained_ckp = "./best_model.pth"
+        load_model_weights(self.model, trained_ckp)
+        val_color_merge_model(
             model=self.model,
             model_name=self.model_name,
             val_loader=self.val_loader,
@@ -90,8 +91,8 @@ class VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32:
         )
 
     def predict_model(self):
-        # trained_ckp = "./best_model.pth"
-        # load_model_weights(self.model, trained_ckp)
+        trained_ckp = "./best_model.pth"
+        load_model_weights(self.model, trained_ckp)
         predict_model(
             model=self.model,
             test_loader=self.val_loader,
@@ -101,6 +102,7 @@ class VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32:
             output_folder="./output"
         )
 
+
 if __name__ == '__main__':
-    model = VisionTransformer_S_224_Bce_Adam_Lr1e_3_Bs32()
+    model = ResNet50_Color_Merge_224_Bce_Adam_Lr1e_3_Bs32()
     model.train()

@@ -41,7 +41,7 @@ class ResNet50_Attention_224_Bce_Adam_Lr1e_3_Bs32:
                                        num_workers=4,
                                        pin_memory=True
                                        )
-        self.val_loader = DataLoader(A007Dataset(txt_file="train.txt",
+        self.val_loader = DataLoader(A007Dataset(txt_file="val.txt",
                                                  root_dir=self.data_root,
                                                  transform=self.transform_val,
                                                  seed=42,
