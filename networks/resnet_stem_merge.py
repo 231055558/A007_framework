@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 from blocks.conv import Conv2dModule
 from blocks.resnet import Bottleneck
