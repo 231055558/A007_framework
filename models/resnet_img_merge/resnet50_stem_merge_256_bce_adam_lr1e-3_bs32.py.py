@@ -14,7 +14,9 @@ from visualization.visualizer import Visualizer
 
 class ResNet50_Stem_Merge_224_Bce_Adam_Lr1e_3_Bs32:
     def __init__(self):
-        self.data_root = 'D:\\code\\A07\\dataset'
+        self.data_root = '../../../data/data_merge'
+        self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
+
         self.model_name = 'ResNet50_224_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
                                         RandomFlip(),
@@ -59,7 +61,6 @@ class ResNet50_Stem_Merge_224_Bce_Adam_Lr1e_3_Bs32:
                                    weight_decay=1e-4
                                    )
         self.visualizer = Visualizer(experiment_name=self.model_name, metrics=self.metric)
-        self.pretrain_ckp = "D:\\code\\A07\\model\\resnet50.pth"
         #self.pretrain_ckp = "./best_model.pth"
 
     def train(self, epoch=2, val=True):
