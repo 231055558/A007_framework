@@ -1,5 +1,5 @@
 from models.load import load_model_weights
-from networks.resnet_attention_head import ResNetAttentionHead
+from networks.resnet import ResNet
 from tools.predict import predict_model
 from tools.train import train_model
 from tools.val import val_model
@@ -12,33 +12,33 @@ from torch.utils.data import DataLoader
 from visualization.visualizer import Visualizer
 
 
-class ResNet50_Attention_224_Bce_Adam_Lr1e_3_Bs32:
+class ResNet50_224_Bce_Adam_Lr1e_3_Bs32:
     def __init__(self):
-        self.data_root = '../../../data/data_merge'
+        self.data_root = '../../../data/dataset'
         self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
 
         self.model_name = 'ResNet50_224_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
                                         RandomFlip(),
-                                        RandomCrop((1080, 1080)),
+                                        RandomCrop((512, 512)),
                                         ToTensor(),
-                                        Resize((256, 256)),
+                                        Resize((512, 512)),
                                         Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
 
         self.transform_val = Compose([LoadImageFromFile(),
-                                      CenterCrop((1080, 1080)),
+                                      CenterCrop((512, 512)),
                                       ToTensor(),
-                                      Resize((256, 256)),
+                                      Resize((512, 512)),
                                       Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
-        self.model = ResNetAttentionHead(depth=50,
-                                    num_classes=8)
+        self.model = ResNet(depth=50,
+                            num_classes=8)
 
         self.train_loader = DataLoader(A007Dataset(txt_file="train.txt",
                                                    root_dir=self.data_root,
                                                    transform=self.transform_train,
                                                    seed=42,
                                                    preload=False),
-                                       batch_size=32,
+                                       batch_size=8,
                                        shuffle=True,
                                        num_workers=4,
                                        pin_memory=True
@@ -48,7 +48,7 @@ class ResNet50_Attention_224_Bce_Adam_Lr1e_3_Bs32:
                                                  transform=self.transform_val,
                                                  seed=42,
                                                  preload=False),
-                                     batch_size=32,
+                                     batch_size=8,
                                      shuffle=False,
                                      num_workers=4,
                                      pin_memory=True
@@ -104,5 +104,5 @@ class ResNet50_Attention_224_Bce_Adam_Lr1e_3_Bs32:
 
 
 if __name__ == '__main__':
-    model = ResNet50_Attention_224_Bce_Adam_Lr1e_3_Bs32()
-    model.train(100)
+    model = ResNet50_224_Bce_Adam_Lr1e_3_Bs32()
+    model.train()

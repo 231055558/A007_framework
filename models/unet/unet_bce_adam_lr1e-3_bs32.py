@@ -3,7 +3,7 @@ from blocks.unet import UNetEncoder
 from tools.train import train_model
 from tools.val import val_model
 from loss.cross_entropy import CrossEntropyLoss
-from metrics.a007_metric import A007_Metrics
+from metrics.a007_metric import A007_Metrics_Sample
 from optims.optimizer import Optimizer
 from dataset.loadertest import A007Dataset, DataLoader as A007DataLoader
 #from dataset.A007_txt import A007DataLoader, A007Dataset
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     loss_fn = CrossEntropyLoss(use_sigmoid=True)  # 使用sigmoid，因为是像素级分类任务
 
     # 评价指标
-    metric = A007_Metrics(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
+    metric = A007_Metrics_Sample(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
 
     # 优化器
     optimizer = Optimizer(model_params=model.parameters(),

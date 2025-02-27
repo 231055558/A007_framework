@@ -4,7 +4,7 @@ from tools.predict import predict_model
 from tools.train import train_model
 from tools.val import val_model
 from loss.cross_entropy import CrossEntropyLoss
-from metrics.a007_metric import A007_Metrics
+from metrics.a007_metric import A007_Metrics_Sample
 from optims.optimizer import Optimizer
 from dataset.A007_txt import A007Dataset
 from dataset.transform import *
@@ -54,7 +54,7 @@ class ResNet50_224_Bce_Adam_Lr1e_3_Bs32:
                                      pin_memory=True
                                      )
         self.loss_fn = CrossEntropyLoss(use_sigmoid=True)
-        self.metric = A007_Metrics(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
+        self.metric = A007_Metrics_Sample(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
         self.optimizer = Optimizer(model_params=self.model.parameters(),
                                    optimizer='adam',
                                    lr=1e-3,
