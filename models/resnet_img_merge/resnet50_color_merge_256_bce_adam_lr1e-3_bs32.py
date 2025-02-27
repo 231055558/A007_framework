@@ -20,13 +20,13 @@ class ResNet50_Color_Merge_224_Bce_Adam_Lr1e_3_Bs32:
         self.model_name = 'ResNet50_224_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
                                         RandomFlip(),
-                                        RandomCrop((1080, 1080)),
+                                        RandomCrop((256, 256)),
                                         ToTensor(),
                                         Resize((256, 256)),
                                         Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
 
         self.transform_val = Compose([LoadImageFromFile(),
-                                      CenterCrop((1080, 1080)),
+                                      CenterCrop((256, 256)),
                                       ToTensor(),
                                       Resize((256, 256)),
                                       Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])

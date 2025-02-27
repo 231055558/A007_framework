@@ -136,20 +136,25 @@ def train_color_merge_model(
         #     torch.save(model.state_dict(), save_path)
         #     print(f'Saved best model with loss {epoch_loss:.4f}')
         if val:
-            metrics = val_color_merge_model(
-                model, val_loader, metric, model_name, device
-            )
+            # 计算验证指标
+            metrics = val_color_merge_model(model, val_loader, metric, model_name, device)
+
+            # 更新可视化图表
             visualizer.update_metrics(metrics)
 
+            # 新增：将指标详细信息写入日志
+            visualizer.log_metrics(metrics)
+
+            # 保存最佳模型
             mean_acc = 0
             num_acc = 0
             for thr in metrics:
                 num_acc += 1
-                mean_acc += metrics[thr]["accuracy"]
+                mean_acc += metrics[thr]["overall_accuracy"]  # 注意这里改为读取总体准确率
             if mean_acc > best_acc:
                 best_acc = mean_acc
                 torch.save(model.state_dict(), save_path)
-                print(f'Saved best model with acc {best_acc/num_acc:.4f}')
+                print(f'Saved best model with acc {best_acc / num_acc:.4f}')
 
 
 
@@ -212,16 +217,21 @@ def train_output_merge_model(
         #     torch.save(model.state_dict(), save_path)
         #     print(f'Saved best model with loss {epoch_loss:.4f}')
         if val:
-            metrics = val_output_merge_model(
-                model, val_loader, metric, model_name, device
-            )
+            # 计算验证指标
+            metrics = val_output_merge_model(model, val_loader, metric, model_name, device)
+
+            # 更新可视化图表
             visualizer.update_metrics(metrics)
 
+            # 新增：将指标详细信息写入日志
+            visualizer.log_metrics(metrics)
+
+            # 保存最佳模型
             mean_acc = 0
             num_acc = 0
             for thr in metrics:
                 num_acc += 1
-                mean_acc += metrics[thr]["accuracy"]
+                mean_acc += metrics[thr]["overall_accuracy"]  # 注意这里改为读取总体准确率
             if mean_acc > best_acc:
                 best_acc = mean_acc
                 torch.save(model.state_dict(), save_path)
@@ -284,16 +294,21 @@ def train_stem_merge_model(
         #     torch.save(model.state_dict(), save_path)
         #     print(f'Saved best model with loss {epoch_loss:.4f}')
         if val:
-            metrics = val_stem_merge_model(
-                model, val_loader, metric, model_name, device
-            )
+            # 计算验证指标
+            metrics = val_stem_merge_model(model, val_loader, metric, model_name, device)
+
+            # 更新可视化图表
             visualizer.update_metrics(metrics)
 
+            # 新增：将指标详细信息写入日志
+            visualizer.log_metrics(metrics)
+
+            # 保存最佳模型
             mean_acc = 0
             num_acc = 0
             for thr in metrics:
                 num_acc += 1
-                mean_acc += metrics[thr]["accuracy"]
+                mean_acc += metrics[thr]["overall_accuracy"]  # 注意这里改为读取总体准确率
             if mean_acc > best_acc:
                 best_acc = mean_acc
                 torch.save(model.state_dict(), save_path)
