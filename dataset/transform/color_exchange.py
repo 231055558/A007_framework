@@ -1,59 +1,89 @@
+import os
 import cv2
+import random
 import numpy as np
+from functools import lru_cache
+from dataset.transform import BaseTransform
 
-def color_transfer(source, target):
-    """
-    将 target 图像的颜色迁移到 source 图像上
-    :param source: 源图像 (BGR 格式)
-    :param target: 目标图像 (BGR 格式)
-    :return: 颜色迁移后的图像 (BGR 格式)
-    """
-    # 将图像转换为 LAB 颜色空间
-    source_lab = cv2.cvtColor(source, cv2.COLOR_BGR2LAB)
-    target_lab = cv2.cvtColor(target, cv2.COLOR_BGR2LAB)
 
-    # 计算 source 和 target 的均值和标准差
-    source_mean, source_std = cv2.meanStdDev(source_lab)
-    target_mean, target_std = cv2.meanStdDev(target_lab)
+class RandomColorTransfer(BaseTransform):
+    def __init__(
+            self,
+            source_image_dir: str,
+            prob: float = 0.5,
+            max_samples: int = 1000,
+            cache_size: int = 500
+    ):
+        """
+        Args:
+            source_image_dir (str): 存放颜色源图片的文件夹路径
+            prob (float): 应用颜色迁移的概率，默认为 0.5
+            max_samples (int): 预处理的源图像最大数量（避免内存溢出），默认为 1000
+            cache_size (int): 缓存最近加载的源图像数量（加快处理速度），默认为 500
+        """
+        super().__init__()
+        self.prob = prob
+        self.source_image_dir = source_image_dir
+        self.max_samples = max_samples
+        self.source_stats = self._precompute_source_stats()
 
-    # 将均值和标准差的形状从 (3, 1) 调整为 (1, 1, 3)
-    source_mean = source_mean.reshape(1, 1, 3)
-    source_std = source_std.reshape(1, 1, 3)
-    target_mean = target_mean.reshape(1, 1, 3)
-    target_std = target_std.reshape(1, 1, 3)
+        self._get_random_source_path = lru_cache(maxsize=cache_size)(self._get_random_source_path)
 
-    # 标准化 source 图像
-    source_normalized = (source_lab - source_mean) / source_std
-    # 应用 target 的均值和标准差
-    result_lab = source_normalized * target_std + target_mean
+    def _precompute_source_stats(self):
+        valid_exts = {'.jpg', '.jpeg', '.png', '.bmp'}
+        all_files = [
+            f for f in os.listdir(self.source_image_dir)
+            if os.path.splitext(f)[1].lower() in valid_exts
+        ]
 
-    # 将结果限制在 LAB 空间的合法范围内 (0 到 255)
-    result_lab = np.clip(result_lab, 0, 255).astype(np.uint8)
+        selected_files = random.sample(
+            all_files,
+            k=min(self.max_samples, len(all_files))
+        )
 
-    # 转换回 BGR 颜色空间
-    result = cv2.cvtColor(result_lab, cv2.COLOR_LAB2BGR)
-    return result
+        stats = []
+        for filename in selected_files:
+            img_path = os.path.join(self.source_image_dir, filename)
+            img = cv2.imread(img_path)
+            if img is not None:
+                lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+                mean, std = cv2.meanStdDev(lab)
+                stats.append((
+                    mean.reshape(3).astype(np.float32),  # shape (3,)
+                    std.reshape(3).astype(np.float32)     # shape (3,)
+                ))
+        return stats
 
-# 示例使用
-# 加载源图像和目标图像
-source_image = cv2.imread('/mnt/mydisk/medical_seg/fwwb_a007/data/data_merge/images/2_left.jpg')
-target_image = cv2.imread('/mnt/mydisk/medical_seg/fwwb_a007/data/data_merge/images/6_left.jpg')
+    def _get_random_source_path(self) -> Tuple[np.ndarray, np.ndarray]:
+        """随机选择一个预存的源图像统计量"""
+        return random.choice(self.source_stats)
 
-# 确保图像加载成功
-if source_image is None or target_image is None:
-    print("Error: 图片加载失败，请检查路径是否正确！")
-else:
-    # 执行颜色交换
-    result_image = color_transfer(source_image, target_image)
+    def color_transfer(self, target_img: np.ndarray) -> np.ndarray:
+        """基于预存的源统计量进行颜色迁移"""
+        # 随机选择一个源统计量
+        source_mean, source_std = self._get_random_source_path()
 
-    # 保存结果
-    cv2.imwrite('result.jpg', result_image)
-    print("颜色交换完成！结果已保存为 result.jpg")
+        # 转换目标图像到 LAB 空间
+        target_lab = cv2.cvtColor(target_img, cv2.COLOR_BGR2LAB)
 
-    # # 显示结果（可选）
-    # cv2.imshow('Source Image', source_image)
-    # cv2.imshow('Target Image', target_image)
-    # cv2.imshow('Result Image', result_image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+        # 计算目标的均值和标准差
+        target_mean, target_std = cv2.meanStdDev(target_lab)
+        target_mean = target_mean.reshape(3).astype(np.float32)
+        target_std = target_std.reshape(3).astype(np.float32)
 
+        # 标准化目标图像
+        target_normalized = (target_lab.astype(np.float32) - target_mean) / (target_std + 1e-10)
+
+        # 应用源图像的统计量
+        result_lab = (target_normalized * source_std) + source_mean
+        result_lab = np.clip(result_lab, 0, 255).astype(np.uint8)
+
+        # 转换回 BGR
+        return cv2.cvtColor(result_lab, cv2.COLOR_LAB2BGR)
+
+    def transform(self, results: dict) -> dict:
+        if random.random() < self.prob:
+            target_img = results['img']
+            transferred_img = self.color_transfer(target_img)
+            results['img'] = transferred_img
+        return results
