@@ -1,66 +1,13 @@
-from torch import nn
-from blocks.conv import Conv2dModule
-from blocks.resnet import Bottleneck
-
-import matplotlib.pyplot as plt
-def gray(feature_map):
-    feature_map = feature_map.cpu().detach().numpy()
-    plt.figure(figsize=(6, 6))
-    plt.imshow(feature_map, cmap='gray', interpolation='nearest')
-    plt.title('Grayscale of the selected feature map')
-    plt.colorbar()
-    plt.show()
-
 import torch
 import numpy as np
-import matplotlib.pyplot as plt
-import cv2
+from torch import nn
+from torch.nn import functional as F
 
-def generate_heatmap(feature_map: torch.Tensor, image: np.ndarray = None, alpha: float = 0.5, colormap: str = 'jet'):
-    """
-    生成热力图并可视化。
+from blocks.conv import Conv2dModule
+from blocks.cross_field_transformer import Transformer_head
+from blocks.resnet import Bottleneck
 
-    Args:
-        feature_map (torch.Tensor): 输入的 C×H×W 特征图。
-        image (np.ndarray): 原始图像 (H, W, 3)，用于叠加热力图。如果为 None，则只显示热力图。
-        alpha (float): 热力图透明度，默认为 0.5。
-        colormap (str): 热力图颜色映射，默认为 'jet'。
-
-    Returns:
-        heatmap (np.ndarray): 生成的热力图 (H, W, 3)。
-    """
-    feature_map = feature_map.cpu().detach()
-    # 确保输入是 Tensor
-    if not isinstance(feature_map, torch.Tensor):
-        feature_map = torch.tensor(feature_map)
-
-    # 在通道方向（C）上叠加
-    heatmap = torch.sum(feature_map, dim=0)  # 形状变为 (H, W)
-
-    # 归一化到 [0, 1] 范围
-    heatmap = (heatmap - heatmap.min()) / (heatmap.max() - heatmap.min())
-
-    # 转换为 NumPy 数组
-    heatmap = heatmap.numpy()
-
-    # 应用颜色映射
-    heatmap = cv2.applyColorMap(np.uint8(255 * heatmap), cv2.COLORMAP_JET if colormap == 'jet' else cv2.COLORMAP_VIRIDIS)
-
-    # 如果提供了原始图像，将热力图叠加到图像上
-    if image is not None:
-        # 确保图像和热力图大小一致
-        heatmap = cv2.resize(heatmap, (image.shape[1], image.shape[0]))
-        heatmap = cv2.addWeighted(image, 1 - alpha, heatmap, alpha, 0)
-
-    # 显示结果
-    plt.imshow(cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB))
-    plt.axis('off')
-    plt.show()
-
-    return heatmap
-
-
-class ResNet_Color_Merge(nn.Module):
+class CrossFieldTransformer(nn.Module):
     arch_settings = {
         50: (Bottleneck, (3, 4, 6, 3)),
         101: (Bottleneck, (3, 4, 23, 3)),
@@ -68,15 +15,18 @@ class ResNet_Color_Merge(nn.Module):
     }
 
     def __init__(self,
-                 depth,
-                 in_channels=6,
+                 depth=50,
+                 in_channels=3,
                  stem_channels=64,
                  base_channels=64,
                  num_classes=1000,
+                 xfmer_hidden_size=1024,
+                 xfmer_layer=3,
+                 p_threshold=0.5,
                  norm='batch_norm',
                  activation='relu',
                  dilation=1):
-        super(ResNet_Color_Merge, self).__init__()
+        super(CrossFieldTransformer, self).__init__()
 
         # 检查 depth 是否支持
         if depth not in self.arch_settings:
@@ -139,9 +89,20 @@ class ResNet_Color_Merge(nn.Module):
             activation=activation
         )
 
-        # 全局平均池化和分类器
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(base_channels * 8 * block.expansion, num_classes)
+        # # 全局平均池化和分类器
+        # self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        # self.fc = nn.Linear(base_channels * 8 * block.expansion, num_classes)
+        self.xfmer_hidden_size = xfmer_hidden_size
+        self.xfmer_layer=xfmer_layer
+        self.p_threshold=p_threshold
+        self.reduce = nn.Conv2d(2048, self.xfmer_hidden_size, kernel_size=1, stride=1, padding=0, bias=False)
+        self.pool = 'avg'
+        self.xfmer_dropout = nn.Dropout(0.1)
+        self.xfmer = Transformer_head(hidden_size=self.xfmer_hidden_size, layers=self.xfmer_layer)
+        self.xfmer_fc = nn.Sequential(
+            nn.LayerNorm(self.xfmer_hidden_size),
+            nn.Linear(self.xfmer_hidden_size, num_classes)
+        )
 
     def _make_layer(self,
                     block,
@@ -194,23 +155,92 @@ class ResNet_Color_Merge(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
-        x = self.stem(x)
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
-        x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
-        return x
+    def forward(self, x1, x2):
+        x1 = self.stem(x1)
+        x1 = self.layer1(x1)
+        x1 = self.layer2(x1)
+        x1 = self.layer3(x1)
+        x1 = self.layer4(x1)
 
+        x2 = self.stem(x2)
+        x2 = self.layer1(x2)
+        x2 = self.layer2(x2)
+        x2 = self.layer3(x2)
+        x2 = self.layer4(x2)
+
+        x1_layer4 = x1
+        x2_layer4 = x2
+
+        x1_patch_layer4 = torch.flatten(x1_layer4, start_dim=2).permute(0, 2, 1) # bs, 256, 2048
+        x2_patch_layer4 = torch.flatten(x2_layer4, start_dim=2).permute(0, 2, 1)
+
+        x1 = self.reduce(x1)
+        x2 = self.reduce(x2)
+
+        x1_patch = torch.flatten(x1, start_dim=2).permute(0, 2, 1) # bs, 256, 1024
+        x2_patch = torch.flatten(x2, start_dim=2).permute(0, 2, 1)
+
+        x1_avg = torch.mean(x1_patch_layer4, dim=-1) #bs, 256
+        x2_avg = torch.mean(x2_patch_layer4, dim=-1)
+
+        x1_avg_max, _ = torch.max(x1_avg, dim=1) #bs
+        x1_avg_min, _ = torch.min(x1_avg, dim=1)
+        x1_avg = (x1_avg - x1_avg_min.unsqueeze(-1)) / (x1_avg_max.unsqueeze(-1) - x1_avg_min.unsqueeze(-1))
+
+        x2_avg_max, _ = torch.max(x2_avg, dim=1)
+        x2_avg_min, _ = torch.min(x2_avg, dim=1)
+        x2_avg = (x2_avg - x2_avg_min.unsqueeze(-1)) / (x2_avg_max.unsqueeze(-1) - x2_avg_min.unsqueeze(-1))
+
+        pred1 = (x1_avg < self.p_threshold).float()
+        pred2 = (x2_avg < self.p_threshold).float()  # bs, 256
+        pred = torch.cat([pred1, pred2], dim=-1) # bs, 512
+
+        bs, feat_dim, g_size, _ = x1.size()
+
+        out_patch = torch.cat([x1_patch, x2_patch], dim=1)  # bs, 256, 1024
+        out_patch = self.xfmer_dropout(out_patch)
+        out_patch = self.xfmer(out_patch, pred)
+
+        if self.pool == 'avg':
+            out = torch.mean(out_patch, dim=1)
+
+        out = self.xfmer_fc(out)
+
+        return out
 
 if __name__ == '__main__':
-    import torch
-    resnet50 = ResNet_Color_Merge(depth=50, num_classes=1000)
 
-    x = torch.randn(1, 6, 224, 224)
+    # 设置随机种子以确保结果可重复
+    torch.manual_seed(42)
 
-    output = resnet50(x)
-    print(output.shape)
+    # 定义模型参数
+    depth = 50  # 支持 50, 101, 152
+    in_channels = 3
+    num_classes = 10
+    batch_size = 2
+    image_size = 224  # 假设输入图像大小为 224x224
+
+    # 创建模型实例
+    model = CrossFieldTransformer(depth=depth, in_channels=in_channels, num_classes=num_classes)
+
+    # 打印模型结构
+    print(model)
+
+    # 生成随机输入数据
+    x1 = torch.randn(batch_size, in_channels, image_size, image_size)  # 输入图像 1
+    x2 = torch.randn(batch_size, in_channels, image_size, image_size)  # 输入图像 2
+
+    # 打印输入数据的形状
+    print(f"Input 1 shape: {x1.shape}")
+    print(f"Input 2 shape: {x2.shape}")
+
+    # 前向传播
+    output = model(x1, x2)
+
+    # 打印输出数据的形状
+    print(f"Output shape: {output.shape}")
+
+    # 检查输出是否符合预期
+    assert output.shape == (batch_size, num_classes), "Output shape is incorrect!"
+
+    print("Test passed!")

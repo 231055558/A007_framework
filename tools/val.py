@@ -56,11 +56,7 @@ def val_color_merge_model(
 
     metrics = metric.compute_metric()
 
-    for threshold in metric.thresholds:
-        print(f'Threshold: {threshold}')
-        print(f'Accuracy: {metrics[threshold]["accuracy"]:.4f}')
-        print(f'Precision: {metrics[threshold]["precision"]:.4f}')
-        print(f'Recall: {metrics[threshold]["recall"]:.4f}')
+    metric.print_metric(metrics)
 
     return metrics
 
@@ -89,16 +85,12 @@ def val_output_merge_model(
 
     metrics = metric.compute_metric()
 
-    for threshold in metric.thresholds:
-        print(f'Threshold: {threshold}')
-        print(f'Accuracy: {metrics[threshold]["accuracy"]:.4f}')
-        print(f'Precision: {metrics[threshold]["precision"]:.4f}')
-        print(f'Recall: {metrics[threshold]["recall"]:.4f}')
+    metric.print_metric(metrics)
 
     return metrics
 
 
-def val_stem_merge_model(
+def val_net_merge_model(
         model,
         val_loader,
         metric,
@@ -120,10 +112,6 @@ def val_stem_merge_model(
 
     metrics = metric.compute_metric()
 
-    for threshold in metric.thresholds:
-        print(f'Threshold: {threshold}')
-        print(f'Accuracy: {metrics[threshold]["accuracy"]:.4f}')
-        print(f'Precision: {metrics[threshold]["precision"]:.4f}')
-        print(f'Recall: {metrics[threshold]["recall"]:.4f}')
+    metric.print_metric(metrics)
 
     return metrics

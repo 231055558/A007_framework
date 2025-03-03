@@ -1,8 +1,8 @@
 from models.load import load_model_weights
 from networks.resnet_stem_merge import ResNet_Stem_Merge
 from tools.predict import predict_model
-from tools.train import train_stem_merge_model
-from tools.val import val_stem_merge_model
+from tools.train import train_net_merge_model
+from tools.val import val_net_merge_model
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.a007_metric import A007_Metrics_Sample
 from optims.optimizer import Optimizer
@@ -65,7 +65,7 @@ class ResNet50_Stem_Merge_224_Bce_Adam_Lr1e_3_Bs32:
 
     def train(self, epoch=100, val=True):
         load_model_weights(self.model, self.pretrain_ckp)
-        train_stem_merge_model(
+        train_net_merge_model(
             model=self.model,
             model_name=self.model_name,
             train_loader=self.train_loader,
@@ -83,7 +83,7 @@ class ResNet50_Stem_Merge_224_Bce_Adam_Lr1e_3_Bs32:
     def val(self):
         trained_ckp = "./best_model.pth"
         load_model_weights(self.model, trained_ckp)
-        val_stem_merge_model(
+        val_net_merge_model(
             model=self.model,
             model_name=self.model_name,
             val_loader=self.val_loader,

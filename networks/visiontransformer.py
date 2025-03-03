@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from blocks.head import VisionTransformerClsHead
-from blocks.transform import PatchEmbed, TransformerEncoderLayer, resize_pos_embed
+from blocks.transformer import PatchEmbed, TransformerEncoderLayer, resize_pos_embed
 
 
 class VisionTransformer(nn.Module):

@@ -12,7 +12,7 @@ class RandomColorTransfer(BaseTransform):
             source_image_dir: str,
             prob: float = 0.5,
             max_samples: int = 1000,
-            cache_size: int = 500
+            cache_size: int = 1000
     ):
         """
         Args:
@@ -54,7 +54,7 @@ class RandomColorTransfer(BaseTransform):
                 ))
         return stats
 
-    def _get_random_source_path(self) -> Tuple[np.ndarray, np.ndarray]:
+    def _get_random_source_path(self):
         """随机选择一个预存的源图像统计量"""
         return random.choice(self.source_stats)
 
