@@ -8,6 +8,14 @@ class DeepLabV3PlusClassifier(nn.Module):
         super().__init__()
         # 不设置 aux_loss，默认使用 True（与预训练权重兼容）
         self.model = deeplabv3_resnet50(aux_loss=False, num_classes=256)
+        self.model.backbone.conv1 = nn.Conv2d(
+            in_channels=6,
+            out_channels=64,
+            kernel_size=7,
+            stride=2,
+            padding=3,
+            bias=False
+        )
 
         # 手动移除辅助分类器
         del self.model.aux_classifier
@@ -33,6 +41,6 @@ class DeepLabV3PlusClassifier(nn.Module):
 if __name__ == '__main__':
     # 使用示例
     model = DeepLabV3PlusClassifier(num_classes=5)
-    input_tensor = torch.randn(2, 3, 512, 512)
+    input_tensor = torch.randn(2, 6, 512, 512)
     output = model(input_tensor)  # 形状: (2, 5)
     print(output.size())
