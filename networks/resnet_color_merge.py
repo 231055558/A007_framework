@@ -138,6 +138,13 @@ class ResNet_Color_Merge(nn.Module):
             norm=norm,
             activation=activation
         )
+        # 特征融合
+        self.feature_fusion = nn.Sequential(
+            nn.Conv2d(base_channels * 8 * block.expansion, base_channels * 8 * block.expansion, kernel_size=1,
+                      bias=False),
+            nn.BatchNorm2d(base_channels * 8 * block.expansion),
+            nn.ReLU(inplace=True)
+        )
 
         # 全局平均池化和分类器
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
@@ -200,6 +207,7 @@ class ResNet_Color_Merge(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
+        x = self.feature_fusion(x)
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
