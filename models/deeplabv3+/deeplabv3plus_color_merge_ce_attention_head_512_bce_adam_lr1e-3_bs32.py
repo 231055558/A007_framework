@@ -1,6 +1,6 @@
 from dataset.transform.color_exchange import RandomColorTransfer
 from models.load import load_model_weights
-from networks.deeplabv3plus import DeepLabV3PlusClassifier
+from networks.deeplabv3plus import DeepLabV3PlusClassifierAttentionHead
 from tools.predict import predict_model
 from tools.train import train_color_merge_model
 from tools.val import val_color_merge_model
@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 from visualization.visualizer import Visualizer
 
 
-class DeepLabV3Plus_Color_Merge_Ce:
+class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
     def __init__(self):
         self.data_root = '../../../data/data_merge'
         # self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
@@ -33,7 +33,7 @@ class DeepLabV3Plus_Color_Merge_Ce:
                                       ToTensor(),
                                       Resize((512, 512)),
                                       Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
-        self.model = DeepLabV3PlusClassifier(num_classes=8)
+        self.model = DeepLabV3PlusClassifierAttentionHead(num_classes=8)
 
         self.train_loader = DataLoader(A007Dataset(txt_file="train.txt",
                                                    root_dir=self.data_root,
@@ -107,6 +107,6 @@ class DeepLabV3Plus_Color_Merge_Ce:
 
 
 if __name__ == '__main__':
-    model = DeepLabV3Plus_Color_Merge_Ce()
+    model = DeepLabV3Plus_Color_Merge_Ce_Attention_Head()
     model.train()
 
