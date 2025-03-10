@@ -130,18 +130,6 @@ class RandomCrop(BaseTransform):
 
         return offset_h, offset_w, crop_size
 
-    def _get_crop_params(self, img):
-        """获取当前线程缓存的裁剪参数，如无则生成新的"""
-        if self._local.crop_params is None:
-            # 生成新的裁剪参数并缓存
-            params = self.rand_crop_params(img)
-            self._local.crop_params = params
-        return self._local.crop_params
-
-    def _reset_crop_params(self):
-        """重置当前线程的缓存参数"""
-        self._local.crop_params = None
-
     def transform(self, results):
         img = results['img']
 
@@ -155,8 +143,8 @@ class RandomCrop(BaseTransform):
             if img_h < crop_size or img_w < crop_size:
                 img = self.pad_if_small(img)
 
-        # 关键修改：使用缓存的裁剪参数
-        offset_h, offset_w, crop_size = self._get_crop_params(img)
+        # 关键修改：直接获取随机裁剪参数（不使用缓存）
+        offset_h, offset_w, crop_size = self.rand_crop_params(img)  # 直接调用随机生成函数
 
         cropped_img = img[offset_h:offset_h + crop_size, offset_w:offset_w + crop_size].copy()
 
@@ -165,8 +153,4 @@ class RandomCrop(BaseTransform):
 
         results['img'] = cropped_img
         results['crop_size'] = cropped_img.shape
-
-        # 重置缓存（确保下一次调用生成新参数）
-        self._reset_crop_params()
-
         return results
