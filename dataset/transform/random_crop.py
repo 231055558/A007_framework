@@ -89,8 +89,8 @@ class RandomCrop(BaseTransform):
         self.pad_val = pad_val
 
         # 初始化线程本地存储
-        self._local = threading.local()
-        self._local.crop_params = None
+        #self._local = threading.local()
+        #self._local.crop_params = None
 
     def pad_image(self, img, padding):
         """对图像进行填充"""
