@@ -27,7 +27,25 @@ class RandomColorTransfer(BaseTransform):
         self.max_samples = max_samples
         self.source_stats = self._precompute_source_stats()
 
-        self._get_random_source_path = lru_cache(maxsize=cache_size)(self._get_random_source_path)
+        class RandomColorTransfer(BaseTransform):
+            def __init__(self, source_image_dir: str, prob: float = 0.5, max_samples: int = 1000,
+                         cache_size: int = 1000):
+                super().__init__()
+                self.prob = prob
+                self.source_image_dir = source_image_dir
+                self.max_samples = max_samples
+                self.source_stats = self._precompute_source_stats()
+                self.cache = {}  # 手动实现缓存
+                self.cache_size = cache_size
+
+            def _get_random_source_path(self):
+                """随机选择一个预存的源图像统计量，并支持手动缓存"""
+                if len(self.cache) >= self.cache_size:
+                    self.cache.popitem()  # 移除最旧的缓存项
+                key = random.choice(range(len(self.source_stats)))
+                if key not in self.cache:
+                    self.cache[key] = self.source_stats[key]
+                return self.cache[key]
 
     def _precompute_source_stats(self):
         valid_exts = {'.jpg', '.jpeg', '.png', '.bmp'}
