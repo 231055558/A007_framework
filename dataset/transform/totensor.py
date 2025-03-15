@@ -11,5 +11,5 @@ class ToTensor(BaseTransform):
         label = torch.tensor(label, dtype=torch.float32)
 
         results['img'] = img
-        results['label'] = label
+        results['gt_label'] = label
         return results

@@ -12,14 +12,12 @@ class RandomColorTransfer(BaseTransform):
             source_image_dir: str,
             prob: float = 0.5,
             max_samples: int = 1000,
-            cache_size: int = 1000
     ):
         """
         Args:
             source_image_dir (str): 存放颜色源图片的文件夹路径
             prob (float): 应用颜色迁移的概率，默认为 0.5
             max_samples (int): 预处理的源图像最大数量（避免内存溢出），默认为 1000
-            cache_size (int): 缓存最近加载的源图像数量（加快处理速度），默认为 500
         """
         super().__init__()
         self.prob = prob
@@ -27,7 +25,6 @@ class RandomColorTransfer(BaseTransform):
         self.max_samples = max_samples
         self.source_stats = self._precompute_source_stats()
 
-        self._get_random_source_path = lru_cache(maxsize=cache_size)(self._get_random_source_path)
 
     def _precompute_source_stats(self):
         valid_exts = {'.jpg', '.jpeg', '.png', '.bmp'}
@@ -50,7 +47,7 @@ class RandomColorTransfer(BaseTransform):
                 mean, std = cv2.meanStdDev(lab)
                 stats.append((
                     mean.reshape(3).astype(np.float32),  # shape (3,)
-                    std.reshape(3).astype(np.float32)     # shape (3,)
+                    std.reshape(3).astype(np.float32)  # shape (3,)
                 ))
         return stats
 

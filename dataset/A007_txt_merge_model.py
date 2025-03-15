@@ -93,11 +93,17 @@ class A007Dataset:
         data_l = self.transform(img_info_l)
         data_r = self.transform(img_info_r)
 
+        data_l_img = data_l['img']
+        data_r_img = data_r['img']
+        data_label = data_l['gt_label']
+
+        del data_l['img'], data_r['img'], data_l['gt_label'], data_r['gt_label']
+
         # # 动态应用随机增强（如 RandomHorizontalFlip）
         # if self.transform:
         #     data = self.transform(data)
 
-        return data_l['img'], data_r['img'], data_l['label']
+        return data_l_img, data_r_img, data_label
 
     def __len__(self):
         return len(self.image_infos)

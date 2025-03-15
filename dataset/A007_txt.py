@@ -43,6 +43,9 @@ class ImageInfo:
     def __repr__(self):
         return f"ImageInfo\n {self.data}"
 
+    def __delitem__(self, key):
+        del self.data[key]
+
 
 # class A007Dataset:
 #     def __init__(self, txt_file: str, root_dir: str, transform: Optional[Callable] = None, seed: Optional[int] = 42):

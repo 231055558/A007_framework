@@ -17,7 +17,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
     def __init__(self):
         self.data_root = '../../../data/data_merge'
         # self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
-        self.pretrain_ckp = "./best_model.pth"
+        # self.pretrain_ckp = "./best_model.pth"
 
         self.model_name = 'DeepLabV3Plus_Color_Merge_Ce_Attention_Head_512_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
@@ -65,8 +65,8 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
         self.visualizer = Visualizer(experiment_name=self.model_name, metrics=self.metric)
         # self.pretrain_ckp = "./best_model.pth"
 
-    def train(self, epoch=100, val=True):
-        load_model_weights(self.model, self.pretrain_ckp)
+    def train(self, epoch=300, val=True):
+        # load_model_weights(self.model, self.pretrain_ckp)
         train_output_merge_model(
             model=self.model,
             model_name=self.model_name,

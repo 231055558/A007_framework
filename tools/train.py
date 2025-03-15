@@ -125,6 +125,8 @@ def train_color_merge_model(
             time_cost = time.time() - time_start
             progress_bar.set_postfix(loss=loss.item(), time_cost=time_cost)
 
+            del outputs, loss
+
 
         epoch_loss = running_loss / len(train_loader)
         visualizer.log(f'Epoch {epoch+1}/{num_epochs} loss: {epoch_loss:.4f}')
@@ -193,19 +195,29 @@ def train_output_merge_model(
             inputs_r = inputs_r.to(device)
             labels = labels.to(device)
 
+            # 前向传播
             outputs_l = model(inputs_l)
             outputs_r = model(inputs_r)
             outputs = outputs_l + outputs_r
 
+            # 计算损失
             loss = loss_fn(outputs, labels)
 
+            # 反向传播
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
+            # 记录损失和时间
             running_loss += loss.item()
             time_cost = time.time() - time_start
             progress_bar.set_postfix(loss=loss.item(), time_cost=time_cost)
+
+            # 释放不需要的张量
+            del outputs_l, outputs_r, outputs, loss
+
+            # 清除 PyTorch 缓存
+            torch.cuda.empty_cache()
 
         epoch_loss = running_loss / len(train_loader)
         visualizer.log(f'Epoch {epoch + 1}/{num_epochs} loss: {epoch_loss:.4f}')
