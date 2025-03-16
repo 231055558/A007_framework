@@ -22,7 +22,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
         self.model_name = 'DeepLabV3Plus_Color_Merge_Ce_Attention_Head_512_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
                                         Resize_Numpy((1080, 1080)),
-                                        Random_Roi_Crop((512, 512)),
+                                        Random_Roi_Crop((768, 768)),
                                         # RandomColorTransfer(source_image_dir='../../../data/data_merge/images'),
                                         RandomFlip(),
                                         # RandomCrop((512, 512)),
@@ -34,7 +34,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
 
         self.transform_val = Compose([LoadImageFromFile(),
                                       Resize_Numpy((1080, 1080)),
-                                      Center_Roi_Crop((512, 512)),
+                                      Center_Roi_Crop((768, 768)),
                                       # CenterCrop((512, 512)),
                                       ToTensor(),
                                       # Resize((512, 512)),
@@ -116,5 +116,5 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
 
 if __name__ == '__main__':
     model = DeepLabV3Plus_Color_Merge_Ce_Attention_Head()
-    model.train()
+    model.val()
 
