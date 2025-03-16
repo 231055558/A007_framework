@@ -22,7 +22,7 @@ def train_model(
     if val:
         assert val_loader is not None and metric is not None
     model.to(device)
-    best_acc = float('0')
+    best_metrics = float('0')
 
     for epoch in range(num_epochs):
         model.train()
@@ -67,15 +67,24 @@ def train_model(
             visualizer.log_metrics(metrics)
 
             # 保存最佳模型
-            mean_acc = 0
-            num_acc = 0
+            mean_metrics = 0
+            num_thresholds = 0
             for thr in metrics:
-                num_acc += 1
-                mean_acc += metrics[thr]["overall_accuracy"]  # 注意这里改为读取总体准确率
-            if mean_acc > best_acc:
-                best_acc = mean_acc
+                num_thresholds += 1
+                # 计算三个指标的平均值
+                current_metrics = (
+                    metrics[thr]["overall_accuracy"] + 
+                    metrics[thr]["overall_precision"] + 
+                    metrics[thr]["overall_recall"]
+                ) / 3.0
+                mean_metrics += current_metrics
+                
+            # 计算所有阈值下的平均综合指标
+            avg_metrics = mean_metrics / num_thresholds
+            if avg_metrics > best_metrics:  # best_metrics需要在训练开始前初始化为0
+                best_metrics = avg_metrics
                 torch.save(model.state_dict(), save_path)
-                print(f'Saved best model with acc {best_acc / num_acc:.4f}')
+                print(f'Saved best model with combined metrics (ACC+PREC+REC)/3: {best_metrics:.4f}')
 
 
 
@@ -100,7 +109,7 @@ def train_color_merge_model(
     if val:
         assert val_loader is not None and metric is not None
     model.to(device)
-    best_acc = float('0')
+    best_metrics = float('0')
 
     for epoch in range(num_epochs):
         model.train()
@@ -148,15 +157,24 @@ def train_color_merge_model(
             visualizer.log_metrics(metrics)
 
             # 保存最佳模型
-            mean_acc = 0
-            num_acc = 0
+            mean_metrics = 0
+            num_thresholds = 0
             for thr in metrics:
-                num_acc += 1
-                mean_acc += metrics[thr]["overall_accuracy"]  # 注意这里改为读取总体准确率
-            if mean_acc > best_acc:
-                best_acc = mean_acc
+                num_thresholds += 1
+                # 计算三个指标的平均值
+                current_metrics = (
+                    metrics[thr]["overall_accuracy"] + 
+                    metrics[thr]["overall_precision"] + 
+                    metrics[thr]["overall_recall"]
+                ) / 3.0
+                mean_metrics += current_metrics
+                
+            # 计算所有阈值下的平均综合指标
+            avg_metrics = mean_metrics / num_thresholds
+            if avg_metrics > best_metrics:  # best_metrics需要在训练开始前初始化为0
+                best_metrics = avg_metrics
                 torch.save(model.state_dict(), save_path)
-                print(f'Saved best model with acc {best_acc / num_acc:.4f}')
+                print(f'Saved best model with combined metrics (ACC+PREC+REC)/3: {best_metrics:.4f}')
 
 
 
@@ -181,7 +199,7 @@ def train_output_merge_model(
     if val:
         assert val_loader is not None and metric is not None
     model.to(device)
-    best_acc = float('0')
+    best_metrics = float('0')
 
     for epoch in range(num_epochs):
         model.train()
@@ -239,15 +257,24 @@ def train_output_merge_model(
             visualizer.log_metrics(metrics)
 
             # 保存最佳模型
-            mean_acc = 0
-            num_acc = 0
+            mean_metrics = 0
+            num_thresholds = 0
             for thr in metrics:
-                num_acc += 1
-                mean_acc += metrics[thr]["overall_accuracy"]  # 注意这里改为读取总体准确率
-            if mean_acc > best_acc:
-                best_acc = mean_acc
+                num_thresholds += 1
+                # 计算三个指标的平均值
+                current_metrics = (
+                    metrics[thr]["overall_accuracy"] + 
+                    metrics[thr]["overall_precision"] + 
+                    metrics[thr]["overall_recall"]
+                ) / 3.0
+                mean_metrics += current_metrics
+                
+            # 计算所有阈值下的平均综合指标
+            avg_metrics = mean_metrics / num_thresholds
+            if avg_metrics > best_metrics:  # best_metrics需要在训练开始前初始化为0
+                best_metrics = avg_metrics
                 torch.save(model.state_dict(), save_path)
-                print(f'Saved best model with acc {best_acc / num_acc:.4f}')
+                print(f'Saved best model with combined metrics (ACC+PREC+REC)/3: {best_metrics:.4f}')
 
     print("Training finished")
 
@@ -270,7 +297,7 @@ def train_net_merge_model(
     if val:
         assert val_loader is not None and metric is not None
     model.to(device)
-    best_acc = float('0')
+    best_metrics = float('0')
 
     for epoch in range(num_epochs):
         model.train()
@@ -316,14 +343,23 @@ def train_net_merge_model(
             visualizer.log_metrics(metrics)
 
             # 保存最佳模型
-            mean_acc = 0
-            num_acc = 0
+            mean_metrics = 0
+            num_thresholds = 0
             for thr in metrics:
-                num_acc += 1
-                mean_acc += metrics[thr]["overall_accuracy"]  # 注意这里改为读取总体准确率
-            if mean_acc > best_acc:
-                best_acc = mean_acc
+                num_thresholds += 1
+                # 计算三个指标的平均值
+                current_metrics = (
+                    metrics[thr]["overall_accuracy"] + 
+                    metrics[thr]["overall_precision"] + 
+                    metrics[thr]["overall_recall"]
+                ) / 3.0
+                mean_metrics += current_metrics
+                
+            # 计算所有阈值下的平均综合指标
+            avg_metrics = mean_metrics / num_thresholds
+            if avg_metrics > best_metrics:  # best_metrics需要在训练开始前初始化为0
+                best_metrics = avg_metrics
                 torch.save(model.state_dict(), save_path)
-                print(f'Saved best model with acc {best_acc / num_acc:.4f}')
+                print(f'Saved best model with combined metrics (ACC+PREC+REC)/3: {best_metrics:.4f}')
 
     print("Training finished")
