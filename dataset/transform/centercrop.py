@@ -61,12 +61,12 @@ class Center_Roi_Crop(BaseTransform):
         # 如果 image_path 包含 "left"
         if "left" in image_path:
             start_h = (h - crop_size) // 2  # 垂直居中
-            start_w = 0  # 从左侧开始
+            start_w = 16  # 从左侧开始
 
         # 如果 image_path 包含 "right"
         elif "right" in image_path:
             start_h = (h - crop_size) // 2  # 垂直居中
-            start_w = w - crop_size  # 从右侧开始
+            start_w = w - crop_size - 16  # 从右侧开始
 
         # 默认中心裁剪
         else:
