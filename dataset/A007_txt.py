@@ -191,7 +191,7 @@ class A007Dataset:
         # if self.transform:
         #     data = self.transform(data)
 
-        return data['img'], data['label']
+        return data['img'], data['gt_label']
 
     def __len__(self):
         return len(self.image_infos)

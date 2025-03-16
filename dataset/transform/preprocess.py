@@ -1,4 +1,4 @@
-import numpy as np
+import torch
 from torchvision.transforms import Normalize
 from dataset.transform.basetransform import BaseTransform
 class Preprocess(BaseTransform):
@@ -12,11 +12,6 @@ class Preprocess(BaseTransform):
         img = self.normalize(img)
         results['img'] = img
         return results
-
-
-from torchvision.transforms import Normalize
-import torch
-
 
 class AdaptiveNormalize(BaseTransform):
     def __init__(self, eps=1e-7):

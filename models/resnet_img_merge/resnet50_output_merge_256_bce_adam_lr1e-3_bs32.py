@@ -106,4 +106,4 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
 
 if __name__ == '__main__':
     model = ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32()
-    model.train()
+    model.val()
