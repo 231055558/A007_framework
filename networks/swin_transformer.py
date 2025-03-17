@@ -61,16 +61,23 @@ class SwinTransformer(nn.Module):
         self.head = AttentionFC(in_features=self.num_features, num_classes=num_classes)
         
     def forward(self, x):
-        x = self.patch_embed(x)
+        # x: [B, C, H, W]
+        x = self.patch_embed(x)  # [B, N, C]
         x = self.pos_drop(x)
         
+        # 重塑维度为 [B, H', W', C]
+        B, N, C = x.shape
+        H = W = int(N ** 0.5)  # N = H * W
+        x = x.view(B, H, W, C)
+        
+        # 通过Transformer层
         for layer in self.layers:
             x = layer(x)
-            
-        x = self.norm(x)
-        x = self.avgpool(x.transpose(1, 2))
-        x = torch.flatten(x, 1)
-        x = self.head(x)
+        
+        # 最后的处理
+        x = self.norm(x)  # [B, H, W, C]
+        x = x.mean(dim=(1, 2))  # Global Average Pooling [B, C]
+        x = self.head(x)  # 分类头 [B, num_classes]
         
         return x
 
@@ -96,8 +103,12 @@ class PatchEmbed(nn.Module):
         B, C, H, W = x.shape
         assert H == self.img_size[0] and W == self.img_size[1], \
             f"Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]})."
-            
-        x = self.proj(x).flatten(2).transpose(1, 2)
+        
+        # 使用卷积进行patch embedding
+        x = self.proj(x)  # [B, embed_dim, H/patch_size, W/patch_size]
+        
+        # 重塑并转置
+        x = x.flatten(2).transpose(1, 2)  # [B, H*W/patch_size^2, embed_dim]
         x = self.norm(x)
         return x
 
