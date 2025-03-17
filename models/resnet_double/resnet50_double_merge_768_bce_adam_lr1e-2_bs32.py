@@ -123,17 +123,17 @@ class ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32:
             device='cuda'
         )
 
-    def predict_model(self):
-        trained_ckp = "./best_model.pth"
-        load_model_weights(self.model, trained_ckp)
-        predict_model(
-            model=self.model,
-            test_loader=self.val_loader,
-            metric=self.metric,
-            model_name=self.model_name,
-            device='cuda',
-            output_folder="./output"
-        )
+    # def predict_model(self):
+    #     trained_ckp = "./best_model.pth"
+    #     load_model_weights(self.model, trained_ckp)
+    #     predict_model(
+    #         model=self.model,
+    #         test_loader=self.val_loader,
+    #         metric=self.metric,
+    #         model_name=self.model_name,
+    #         device='cuda',
+    #         output_folder="./output"
+    #     )
 
 
 if __name__ == '__main__':

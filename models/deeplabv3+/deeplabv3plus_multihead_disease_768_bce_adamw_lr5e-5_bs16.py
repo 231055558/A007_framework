@@ -1,6 +1,6 @@
 from dataset.transform.color_exchange import RandomColorTransfer
 from models.load import load_model_weights
-from networks.deeplabv3plus import DeepLabV3PlusClassifierAttentionHeadOutputMerge
+from networks.deeplabv3plus import DeepLabV3PlusClassifierAMultiHeadDiseaseHeadOutputMerge
 from tools.predict import predict_model
 from tools.train import train_output_merge_model
 from tools.val import val_output_merge_model
@@ -11,7 +11,6 @@ from dataset.A007_txt_merge_model import A007Dataset
 from dataset.transform import *
 from torch.utils.data import DataLoader
 from visualization.visualizer import Visualizer
-from blocks.head import MultiHeadDiseaseClassifier
 import torch
 
 
@@ -44,19 +43,15 @@ class DeepLabV3Plus_MultiHead_Disease_768_Bce_AdamW:
                                       ])
 
         # 初始化模型
-        self.model = DeepLabV3PlusClassifierAttentionHeadOutputMerge(num_classes=8)
-        # 替换原有分类头为新的多头疾病分类器
-        self.model.classifier.head = MultiHeadDiseaseClassifier(
-            in_features=256,  # DeepLabV3+的特征维度
-            num_classes=8
-        )
+        self.model = DeepLabV3PlusClassifierAMultiHeadDiseaseHeadOutputMerge(num_classes=8)
+
 
         self.train_loader = DataLoader(A007Dataset(txt_file="train.txt",
                                                  root_dir=self.data_root,
                                                  transform=self.transform_train,
                                                  seed=42,
                                                  preload=False),
-                                     batch_size=16,
+                                     batch_size=2,
                                      shuffle=True,
                                      num_workers=4,
                                      pin_memory=True
@@ -66,7 +61,7 @@ class DeepLabV3Plus_MultiHead_Disease_768_Bce_AdamW:
                                                transform=self.transform_val,
                                                seed=42,
                                                preload=False),
-                                   batch_size=16,
+                                   batch_size=2,
                                    shuffle=False,
                                    num_workers=4,
                                    pin_memory=True
