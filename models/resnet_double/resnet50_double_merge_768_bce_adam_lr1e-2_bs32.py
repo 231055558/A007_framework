@@ -52,7 +52,7 @@ class ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32:
                                                    transform=self.transform_train,
                                                    seed=42,
                                                    preload=False),
-                                       batch_size=16,
+                                       batch_size=2,
                                        shuffle=True,
                                        num_workers=4,
                                        pin_memory=True
@@ -62,7 +62,7 @@ class ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32:
                                                  transform=self.transform_val,
                                                  seed=42,
                                                  preload=False),
-                                     batch_size=16,
+                                     batch_size=2,
                                      shuffle=False,
                                      num_workers=4,
                                      pin_memory=True
@@ -97,7 +97,7 @@ class ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32:
             val_loader=self.val_loader,
             loss_fn=self.loss_fn,
             metric=self.metric,
-            optimizer=self.optimizer_1,
+            optimizer_1=self.optimizer_1,
             optimizer_2=self.optimizer_2,
             device='cuda',
             num_epochs=epoch,
@@ -138,4 +138,4 @@ class ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32:
 
 if __name__ == '__main__':
     model = ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32()
-    model.val()
+    model.train()

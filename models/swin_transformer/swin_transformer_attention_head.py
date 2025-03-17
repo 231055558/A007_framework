@@ -24,7 +24,7 @@ class SwinTransformer_Attention_Head:
         self.transform_train = Compose([
             LoadImageFromFile(),
             Resize_Numpy((1080, 1080)),
-            Random_Roi_Crop((768, 768)),
+            Random_Roi_Crop((512, 512)),
             RandomFlip(),
             ToTensor(),
             AdaptiveNormalize()
@@ -35,7 +35,7 @@ class SwinTransformer_Attention_Head:
         self.transform_val = Compose([
             LoadImageFromFile(),
             Resize_Numpy((1080, 1080)),
-            Center_Roi_Crop((768, 768)),
+            Center_Roi_Crop((512, 512)),
             ToTensor(),
             AdaptiveNormalize()
             # 移除了Resize，直接使用768x768的尺寸
@@ -43,7 +43,7 @@ class SwinTransformer_Attention_Head:
 
         # 初始化模型 - 调整为更大的模型配置
         self.model = SwinTransformer(
-            img_size=768,  # 增大输入尺寸
+            img_size=512,  # 增大输入尺寸
             patch_size=4,
             in_channels=3,
             num_classes=8,
@@ -67,7 +67,7 @@ class SwinTransformer_Attention_Head:
                 seed=42,
                 preload=False
             ),
-            batch_size=16,  # 减小batch size以适应更大的模型
+            batch_size=2,  # 减小batch size以适应更大的模型
             shuffle=True,
             num_workers=4,
             pin_memory=True
@@ -81,7 +81,7 @@ class SwinTransformer_Attention_Head:
                 seed=42,
                 preload=False
             ),
-            batch_size=16,  # 减小batch size
+            batch_size=2,  # 减小batch size
             shuffle=False,
             num_workers=4,
             pin_memory=True

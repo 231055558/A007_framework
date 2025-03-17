@@ -6,6 +6,12 @@ from blocks.conv import Conv2dModule
 from blocks.resnet import Bottleneck
 
 class ResNetFPNAttentionHead(nn.Module):
+    arch_settings = {
+        50: (Bottleneck, (3, 4, 6, 3)),
+        101: (Bottleneck, (3, 4, 23, 3)),
+        152: (Bottleneck, (3, 8, 36, 3)),
+    }
+
     def __init__(self,
                  depth,
                  in_channels=3,
@@ -100,7 +106,56 @@ class ResNetFPNAttentionHead(nn.Module):
         # 修改全连接层的输入维度
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = AttentionFC(in_features=self.fpn_channels * 3, num_classes=num_classes)
+    def _make_layer(self,
+                    block,
+                    num_blocks,
+                    in_channels,
+                    out_channels,  # 这里的 out_channels 是最终的输出通道数
+                    stride=1,
+                    dilation=1,
+                    norm='batch_norm',
+                    activation='relu'):
+        # 是否需要下采样
+        downsample = None
+        if stride != 1 or in_channels != out_channels:
+            downsample = Conv2dModule(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=1,
+                stride=stride,
+                norm=norm,
+                activation=None
+            )
 
+        # 构建残差层
+        layers = []
+        layers.append(
+            block(
+                in_channels=in_channels,
+                out_channels=out_channels,  # 主分支的最终输出通道数
+                stride=stride,
+                dilation=dilation,
+                downsample=downsample,
+                norm=norm,
+                activation=activation
+            )
+        )
+
+        # 后续 Blocks
+        for _ in range(1, num_blocks):
+            layers.append(
+                block(
+                    in_channels=out_channels,
+                    out_channels=out_channels,  # 输入输出通道数一致
+                    stride=1,
+                    dilation=dilation,
+                    downsample=None,
+                    norm=norm,
+                    activation=activation
+                )
+            )
+
+        return nn.Sequential(*layers)
     def forward(self, x):
         # 主干网络前向传播
         x = self.stem(x)
