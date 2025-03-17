@@ -107,10 +107,12 @@ class ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32:
         )
 
     def val(self):
-        trained_ckp = "./best_model.pth"
-        load_model_weights(self.model_1, trained_ckp)
-        load_model_weights(self.model_2, trained_ckp)
-        load_model_weights(self.head, trained_ckp)
+        trained_ckp_model_1 = "./best_model_1.pth"
+        trained_ckp_model_2 = "./best_model_2.pth"
+        trained_ckp_head = "./best_head.pth"
+        load_model_weights(self.model_1, trained_ckp_model_1)
+        load_model_weights(self.model_2, trained_ckp_model_2)
+        load_model_weights(self.head, trained_ckp_head)
         val_double_merge_model(
             model_1=self.model_1,
             model_2=self.model_2,
