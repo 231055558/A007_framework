@@ -21,16 +21,17 @@ class ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32:
         self.pretrain_ckp_head = None
         self.model_name = 'ResNet50_224_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
+                                        RandomColorTransfer(source_image_dir='../../../data/data_merge/images'),
                                         RandomFlip(),
-                                        RandomCrop((256, 256)),
+                                        RandomCrop((512, 512)),
                                         ToTensor(),
-                                        Resize((256, 256)),
+                                        Resize((512, 512)),
                                         Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
 
         self.transform_val = Compose([LoadImageFromFile(),
-                                      CenterCrop((256, 256)),
+                                      CenterCrop((512, 512)),
                                       ToTensor(),
-                                      Resize((256, 256)),
+                                      Resize((512, 512)),
                                       Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
         self.model_1 = ResNet_To_Linear(depth=50,
                             num_classes=8)
@@ -73,7 +74,7 @@ class ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32:
         load_model_weights(self.model_2, self.pretrain_ckp_model_2)
         if self.pretrain_ckp_head is not None:
             load_model_weights(self.head, self.pretrain_ckp_head)
-            
+
         train_double_merge_model(
             model_1=self.model_1,
             model_2=self.model_2,
