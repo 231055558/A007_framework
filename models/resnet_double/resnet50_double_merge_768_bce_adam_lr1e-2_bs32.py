@@ -21,18 +21,26 @@ class ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32:
         self.pretrain_ckp_head = None
         self.model_name = 'ResNet50_224_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
-                                        RandomColorTransfer(source_image_dir='../../../data/data_merge/images'),
+                                        Resize_Numpy((1080, 1080)),
+                                        Random_Roi_Crop((768, 768)),
+                                        # RandomColorTransfer(source_image_dir='../../../data/data_merge/images'),
                                         RandomFlip(),
-                                        RandomCrop((512, 512)),
+                                        # RandomCrop((512, 512)),
                                         ToTensor(),
-                                        Resize((512, 512)),
-                                        Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+                                        # Resize((512, 512)),
+                                        # Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
+                                        AdaptiveNormalize()
+                                        ])
 
         self.transform_val = Compose([LoadImageFromFile(),
-                                      CenterCrop((512, 512)),
+                                      Resize_Numpy((1080, 1080)),
+                                      Center_Roi_Crop((768, 768)),
+                                      # CenterCrop((512, 512)),
                                       ToTensor(),
-                                      Resize((512, 512)),
-                                      Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+                                      # Resize((512, 512)),
+                                      # Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
+                                      AdaptiveNormalize()
+                                      ])
         self.model_1 = ResNet_To_Linear(depth=50,
                             num_classes=8)
         self.model_2 = ResNet_To_Linear(depth=50,

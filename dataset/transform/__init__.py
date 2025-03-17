@@ -7,3 +7,4 @@ from .random_crop import RandomCrop, Random_Roi_Crop
 from .randomflip import RandomFlip
 from .resize import Resize, Resize_Numpy
 from .totensor import ToTensor
+from .random_color_transfer import RandomColorTransfer
