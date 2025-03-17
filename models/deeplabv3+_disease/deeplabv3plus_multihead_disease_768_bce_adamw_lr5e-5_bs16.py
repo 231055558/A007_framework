@@ -76,7 +76,7 @@ class DeepLabV3Plus_MultiHead_Disease_768_Bce_AdamW:
         self.metric = A007_Metrics_Label(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
         self.optimizer = Optimizer(model_params=self.model.parameters(),
                                 optimizer='adamw',
-                                lr=5e-5,
+                                lr=1e-2,
                                 weight_decay=0.05
                                 )
         self.visualizer = Visualizer(experiment_name=self.model_name, metrics=self.metric)
@@ -93,7 +93,7 @@ class DeepLabV3Plus_MultiHead_Disease_768_Bce_AdamW:
             optimizer=self.optimizer,
             device='cuda',
             num_epochs=epoch,
-            save_path='best_model.pth',
+            save_path='../deeplabv3+/best_model.pth',
             val=val,
             visualizer=self.visualizer
         )
