@@ -4,9 +4,9 @@ import torch.nn.functional as F
 
 
 class DiseaseClassificationLoss(nn.Module):
-    def __init__(self, pos_weights):
+    def __init__(self, pos_weights, device='cuda'):
         super(DiseaseClassificationLoss, self).__init__()
-        self.pos_weights = pos_weights
+        self.pos_weights = pos_weights.to(device)
 
     def forward(self, predictions, targets):
         # 基础BCE损失

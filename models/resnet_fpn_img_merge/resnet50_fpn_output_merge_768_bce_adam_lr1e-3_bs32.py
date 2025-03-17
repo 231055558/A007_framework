@@ -12,24 +12,33 @@ from torch.utils.data import DataLoader
 from visualization.visualizer import Visualizer
 
 
-class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
+class ResNet50_FPN_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
     def __init__(self):
         self.data_root = '../../../data/data_merge'
         self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
 
-        self.model_name = 'ResNet50_224_Bce_Adam_Lr1e_3_Bs32'
+        self.model_name = 'ResNet50_768_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
+                                        Resize_Numpy((1080, 1080)),
+                                        Random_Roi_Crop((768, 768)),
+                                        # RandomColorTransfer(source_image_dir='../../../data/data_merge/images'),
                                         RandomFlip(),
-                                        RandomCrop((256, 256)),
+                                        # RandomCrop((512, 512)),
                                         ToTensor(),
-                                        Resize((256, 256)),
-                                        Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+                                        # Resize((512, 512)),
+                                        # Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
+                                        AdaptiveNormalize()
+                                        ])
 
         self.transform_val = Compose([LoadImageFromFile(),
-                                      CenterCrop((256, 256)),
+                                      Resize_Numpy((1080, 1080)),
+                                      Center_Roi_Crop((768, 768)),
+                                      # CenterCrop((512, 512)),
                                       ToTensor(),
-                                      Resize((256, 256)),
-                                      Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+                                      # Resize((512, 512)),
+                                      # Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
+                                      AdaptiveNormalize()
+                                      ])
         self.model = ResNetFPNAttentionHead(
             depth=50,
             in_channels=3,
@@ -45,7 +54,7 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
                                                    transform=self.transform_train,
                                                    seed=42,
                                                    preload=False),
-                                       batch_size=16,
+                                       batch_size=2,
                                        shuffle=True,
                                        num_workers=4,
                                        pin_memory=True
@@ -55,7 +64,7 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
                                                  transform=self.transform_val,
                                                  seed=42,
                                                  preload=False),
-                                     batch_size=16,
+                                     batch_size=2,
                                      shuffle=False,
                                      num_workers=4,
                                      pin_memory=True
@@ -64,7 +73,7 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
         self.metric = A007_Metrics_Label(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
         self.optimizer = Optimizer(model_params=self.model.parameters(),
                                    optimizer='adam',
-                                   lr=1e-3,
+                                   lr=1e-2,
                                    weight_decay=1e-4
                                    )
         self.visualizer = Visualizer(experiment_name=self.model_name, metrics=self.metric)
@@ -112,5 +121,5 @@ class ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32:
 
 
 if __name__ == '__main__':
-    model = ResNet50_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32()
-    model.val()
+    model = ResNet50_FPN_Output_Merge_224_Bce_Adam_Lr1e_3_Bs32()
+    model.train()
