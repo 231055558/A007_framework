@@ -28,7 +28,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
                                         # RandomCrop((512, 512)),
                                         ToTensor(),
                                         # Resize((512, 512)),
-                                        Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
+                                        # Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
                                         AdaptiveNormalize()
                                         ])
 
