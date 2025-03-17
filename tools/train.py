@@ -386,11 +386,13 @@ def train_double_merge_model(
         assert val_loader is not None and metric is not None
     model_1.to(device)
     model_2.to(device)
+    head.to(device)
     best_metrics = float('0')
 
     for epoch in range(num_epochs):
         model_1.train()
         model_2.train()
+        head.train()
         running_loss = 0.0
         progress_bar = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{num_epochs}")
 
