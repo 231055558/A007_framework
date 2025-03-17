@@ -3,7 +3,7 @@ from networks.resnet_to_linear import ResNet_To_Linear
 from blocks.head import AttentionFC
 from tools.predict import predict_model
 from tools.train import train_double_merge_model
-from tools.val import val_output_merge_model
+from tools.val import val_double_merge_model, val_output_merge_model
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.a007_metric import A007_Metrics_Label
 from optims.optimizer import Optimizer
@@ -108,9 +108,13 @@ class ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32:
 
     def val(self):
         trained_ckp = "./best_model.pth"
-        load_model_weights(self.model, trained_ckp)
-        val_output_merge_model(
-            model=self.model,
+        load_model_weights(self.model_1, trained_ckp)
+        load_model_weights(self.model_2, trained_ckp)
+        load_model_weights(self.head, trained_ckp)
+        val_double_merge_model(
+            model_1=self.model_1,
+            model_2=self.model_2,
+            head=self.head,
             model_name=self.model_name,
             val_loader=self.val_loader,
             metric=self.metric,
