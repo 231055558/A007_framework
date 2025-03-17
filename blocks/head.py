@@ -98,3 +98,118 @@ class VisionTransformerClsHead(nn.Module):
         pre_logits = self.pre_logits(feats)
         cls_score = self.head(pre_logits)
         return cls_score
+
+
+class MultiHeadDiseaseClassifier(nn.Module):
+    def __init__(self, in_features, num_classes=8):
+        super(MultiHeadDiseaseClassifier, self).__init__()
+        
+        # 特征增强层
+        self.feature_enhancement = nn.Sequential(
+            nn.Linear(in_features, in_features),
+            nn.LayerNorm(in_features),
+            nn.ReLU(),
+            nn.Dropout(0.2)
+        )
+        
+        # 正常/异常二分类分支
+        self.normal_branch = nn.Sequential(
+            nn.Linear(in_features, in_features // 2),
+            nn.LayerNorm(in_features // 2),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(in_features // 2, 1)
+        )
+        
+        # 疾病分类分支（考虑疾病间的关联性）
+        self.disease_shared = nn.Sequential(
+            nn.Linear(in_features, in_features),
+            nn.LayerNorm(in_features),
+            nn.ReLU(),
+            nn.Dropout(0.2)
+        )
+        
+        # 疾病特定分支
+        self.disease_specific = nn.ModuleList([
+            nn.Sequential(
+                nn.Linear(in_features, in_features // 2),
+                nn.LayerNorm(in_features // 2),
+                nn.ReLU(),
+                nn.Dropout(0.1),
+                nn.Linear(in_features // 2, 1)
+            ) for _ in range(num_classes - 1)
+        ])
+        
+        # 疾病关联注意力
+        self.disease_correlation = nn.MultiheadAttention(
+            embed_dim=in_features,
+            num_heads=4,
+            dropout=0.1
+        )
+        
+        # 类别权重（用于处理类别不平衡）
+        self.class_weights = nn.Parameter(torch.ones(num_classes))
+        
+    def forward(self, x):
+        # 特征增强
+        enhanced_features = self.feature_enhancement(x)
+        
+        # 正常/异常分类
+        normal_logit = self.normal_branch(enhanced_features)
+        
+        # 疾病共享特征
+        disease_features = self.disease_shared(enhanced_features)
+        
+        # 疾病关联建模
+        disease_features = disease_features.unsqueeze(0)  # 添加序列维度
+        disease_features, _ = self.disease_correlation(
+            disease_features, disease_features, disease_features
+        )
+        disease_features = disease_features.squeeze(0)  # 移除序列维度
+        
+        # 各疾病特定分类
+        disease_logits = []
+        for disease_classifier in self.disease_specific:
+            logit = disease_classifier(disease_features)
+            disease_logits.append(logit)
+        
+        # 合并所有预测结果
+        disease_logits = torch.cat(disease_logits, dim=1)
+        all_logits = torch.cat([normal_logit, disease_logits], dim=1)
+        
+        # 应用类别权重
+        weighted_logits = all_logits * self.class_weights
+        
+        return weighted_logits
+    
+    # def get_loss_weights(self, pos_counts, neg_counts):
+    #     """
+    #     计算每个类别的损失权重
+    #     """
+    #     total_samples = pos_counts + neg_counts
+    #     pos_weights = torch.sqrt(neg_counts / pos_counts)
+    #     return pos_weights
+
+
+class DiseaseClassificationLoss(nn.Module):
+    def __init__(self, pos_weights):
+        super(DiseaseClassificationLoss, self).__init__()
+        self.pos_weights = pos_weights
+        
+    def forward(self, predictions, targets):
+        # 基础BCE损失
+        bce_loss = F.binary_cross_entropy_with_logits(
+            predictions, targets, 
+            pos_weight=self.pos_weights,
+            reduction='none'
+        )
+        
+        # Focal Loss 项
+        probs = torch.sigmoid(predictions)
+        focal_weight = (1 - probs) * targets + probs * (1 - targets)
+        focal_weight = focal_weight ** 2
+        
+        # 组合损失
+        loss = bce_loss * focal_weight
+        
+        return loss.mean()
