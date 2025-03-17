@@ -19,7 +19,7 @@ class ResNet_To_Linear(nn.Module):
                  norm='batch_norm',
                  activation='relu',
                  dilation=1):
-        super(ResNet, self).__init__()
+        super(ResNet_To_Linear, self).__init__()
 
         # 检查 depth 是否支持
         if depth not in self.arch_settings:
@@ -150,7 +150,7 @@ class ResNet_To_Linear(nn.Module):
 
 if __name__ == '__main__':
     import torch
-    resnet50 = ResNet(depth=50, num_classes=1000)
+    resnet50 = ResNet_To_Linear(depth=50, num_classes=1000)
 
     x = torch.randn(1, 3, 224, 224)
 
