@@ -69,11 +69,16 @@ class ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32:
                                      )
         self.loss_fn = CrossEntropyLoss(use_sigmoid=True)
         self.metric = A007_Metrics_Label(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
-        self.optimizer = Optimizer(model_params=self.model.parameters(),
+        self.optimizer_1 = Optimizer(model_params=self.model_1.parameters(),
                                    optimizer='adam',
                                    lr=1e-3,
                                    weight_decay=1e-4
                                    )
+        self.optimizer_2 = Optimizer(model_params=self.model_2.parameters(),
+                                      optimizer='adam',
+                                      lr=1e-3,
+                                      weight_decay=1e-4
+                                      )
         self.visualizer = Visualizer(experiment_name=self.model_name, metrics=self.metric)
         #self.pretrain_ckp = "./best_model.pth"
 
@@ -92,7 +97,8 @@ class ResNet50_Double_Merge_768_Bce_Adam_Lr1e_2_Bs32:
             val_loader=self.val_loader,
             loss_fn=self.loss_fn,
             metric=self.metric,
-            optimizer=self.optimizer,
+            optimizer=self.optimizer_1,
+            optimizer_2=self.optimizer_2,
             device='cuda',
             num_epochs=epoch,
             save_path='best_model.pth',

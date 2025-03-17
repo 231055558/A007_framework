@@ -115,3 +115,38 @@ def val_net_merge_model(
     metric.print_metric(metrics)
 
     return metrics
+
+def val_double_merge_model(
+        model_1,
+        model_2,
+        head,
+        val_loader,
+        metric,
+        model_name="default_model",
+        device='cuda'
+):
+    model_1.to(device)
+    model_2.to(device)
+    head.to(device)
+    model_1.eval()
+    model_2.eval()
+    head.eval()
+
+    with torch.no_grad():
+        progress_bar = tqdm(val_loader, desc='Validation')
+        for inputs_l, inputs_r, labels in progress_bar:
+            inputs_l = inputs_l.to(device)
+            inputs_r = inputs_r.to(device)
+            labels = labels.to(device)
+
+            outputs_l = model_1(inputs_l)
+            outputs_r = model_2(inputs_r)
+            outputs = head(torch.cat((outputs_l, outputs_r), dim=1))
+            metric(outputs, labels)
+
+    metrics = metric.compute_metric()
+
+    metric.print_metric(metrics)
+
+    return metrics
+

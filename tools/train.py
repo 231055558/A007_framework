@@ -1,7 +1,7 @@
 import torch
 from tqdm import tqdm
 import time
-from tools.val import val_model, val_color_merge_model, val_output_merge_model, val_net_merge_model
+from tools.val import val_double_merge_model, val_model, val_color_merge_model, val_output_merge_model, val_net_merge_model
 
 
 def train_model(
@@ -370,7 +370,8 @@ def train_double_merge_model(
         head,
         train_loader,
         loss_fn,
-        optimizer,
+        optimizer_1,
+        optimizer_2,
         visualizer,
         device='cuda',
         model_name="default_model",
@@ -410,9 +411,11 @@ def train_double_merge_model(
             loss = loss_fn(outputs, labels)
 
             # 反向传播
-            optimizer.zero_grad()
+            optimizer_1.zero_grad()
+            optimizer_2.zero_grad()
             loss.backward()
-            optimizer.step()
+            optimizer_1.step()
+            optimizer_2.step()
 
             # 记录损失和时间
             running_loss += loss.item()
@@ -436,7 +439,7 @@ def train_double_merge_model(
         #     print(f'Saved best model with loss {epoch_loss:.4f}')
         if val:
             # 计算验证指标
-            metrics = val_output_merge_model(model, val_loader, metric, model_name, device)
+            metrics = val_double_merge_model(model_1, model_2, head, val_loader, metric, model_name, device)
 
             # 更新可视化图表
             visualizer.update_metrics(metrics)
