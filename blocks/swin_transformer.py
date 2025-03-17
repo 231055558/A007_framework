@@ -6,6 +6,34 @@ import numpy as np
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 
 
+def window_partition(x, window_size):
+    """将特征图划分为多个窗口
+    Args:
+        x: (B, H, W, C)
+        window_size: window size
+    Returns:
+        windows: (num_windows*B, window_size, window_size, C)
+    """
+    B, H, W, C = x.shape
+    x = x.view(B, H // window_size, window_size, W // window_size, window_size, C)
+    windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size, window_size, C)
+    return windows
+
+def window_reverse(windows, window_size, H, W):
+    """将窗口还原为特征图
+    Args:
+        windows: (num_windows*B, window_size, window_size, C)
+        window_size: Window size
+        H: Height of image
+        W: Width of image
+    Returns:
+        x: (B, H, W, C)
+    """
+    B = int(windows.shape[0] / (H * W / window_size / window_size))
+    x = windows.view(B, H // window_size, W // window_size, window_size, window_size, -1)
+    x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
+    return x
+
 class WindowAttention(nn.Module):
     def __init__(self, dim, window_size, num_heads, qkv_bias=True, attn_drop=0., proj_drop=0.):
         super().__init__()
@@ -140,3 +168,5 @@ class SwinTransformerBlock(nn.Module):
         x = x + self.drop_path(self.mlp(self.norm2(x)))
 
         return x 
+    
+    

@@ -177,19 +177,33 @@ class PatchMerging(nn.Module):
         
         return x 
 
-# def window_partition(x, window_size):
-#     """将特征图划分为多个窗口"""
-#     B, H, W, C = x.shape
-#     x = x.view(B, H // window_size, window_size, W // window_size, window_size, C)
-#     windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size, window_size, C)
-#     return windows
+def window_partition(x, window_size):
+    """将特征图划分为多个窗口
+    Args:
+        x: (B, H, W, C)
+        window_size: window size
+    Returns:
+        windows: (num_windows*B, window_size, window_size, C)
+    """
+    B, H, W, C = x.shape
+    x = x.view(B, H // window_size, window_size, W // window_size, window_size, C)
+    windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size, window_size, C)
+    return windows
 
-# def window_reverse(windows, window_size, H, W):
-#     """将窗口还原为特征图"""
-#     B = int(windows.shape[0] / (H * W / window_size / window_size))
-#     x = windows.view(B, H // window_size, W // window_size, window_size, window_size, -1)
-#     x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
-#     return x
+def window_reverse(windows, window_size, H, W):
+    """将窗口还原为特征图
+    Args:
+        windows: (num_windows*B, window_size, window_size, C)
+        window_size: Window size
+        H: Height of image
+        W: Width of image
+    Returns:
+        x: (B, H, W, C)
+    """
+    B = int(windows.shape[0] / (H * W / window_size / window_size))
+    x = windows.view(B, H // window_size, W // window_size, window_size, window_size, -1)
+    x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
+    return x
 
 if __name__ == "__main__":
     # 创建一个简单的测试配置
