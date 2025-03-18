@@ -41,7 +41,7 @@ class ModelVisualizer(tk.Tk):
         left_scrollbar.grid(row=1, column=1, sticky='ns')
 
         self.left_listbox = tk.Listbox(self.left_frame, 
-                                     font=("Arial", 30),
+                                     font=("Arial", 50),
                                      yscrollcommand=left_scrollbar.set)
         self.left_listbox.grid(row=1, column=0, sticky='nsew')
         left_scrollbar.config(command=self.left_listbox.yview)
@@ -62,7 +62,7 @@ class ModelVisualizer(tk.Tk):
         right_scrollbar.grid(row=1, column=1, sticky='ns')
 
         self.right_listbox = tk.Listbox(self.right_frame, 
-                                      font=("Arial", 30),
+                                      font=("Arial", 50),
                                       yscrollcommand=right_scrollbar.set)
         self.right_listbox.grid(row=1, column=0, sticky='nsew')
         right_scrollbar.config(command=self.right_listbox.yview)
