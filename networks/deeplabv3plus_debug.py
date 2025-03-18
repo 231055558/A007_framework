@@ -218,7 +218,7 @@ class DeepLabV3PlusClassifier(nn.Module):
         )
         
         # 移除最后的分类层
-        del self.deeplabv3plus.classifier
+        del self.model.classifier
         
         # 全局池化和分类头
         self.global_pool = nn.AdaptiveAvgPool2d(1)
@@ -226,13 +226,13 @@ class DeepLabV3PlusClassifier(nn.Module):
 
     def forward(self, x):
         # 获取特征
-        x = self.deeplabv3plus.stem(x)
-        low_level_feat = self.deeplabv3plus.layer1(x)
-        x = self.deeplabv3plus.layer2(low_level_feat)
-        x = self.deeplabv3plus.layer3(x)
-        x = self.deeplabv3plus.layer4(x)
-        x = self.deeplabv3plus.aspp(x)
-        x = self.deeplabv3plus.decoder(x, low_level_feat)
+        x = self.model.stem(x)
+        low_level_feat = self.model.layer1(x)
+        x = self.model.layer2(low_level_feat)
+        x = self.model.layer3(x)
+        x = self.model.layer4(x)
+        x = self.model.aspp(x)
+        x = self.model.decoder(x, low_level_feat)
         
         # 全局池化
         x = self.global_pool(x)
@@ -255,7 +255,7 @@ class DeepLabV3PlusClassifierAttentionHead(nn.Module):
         )
         
         # 移除最后的分类层
-        del self.deeplabv3plus.classifier
+        del self.model.classifier
         
         # 全局池化和注意力分类头
         self.global_pool = nn.AdaptiveAvgPool2d(1)
@@ -263,13 +263,13 @@ class DeepLabV3PlusClassifierAttentionHead(nn.Module):
 
     def forward(self, x):
         # 获取特征
-        x = self.deeplabv3plus.stem(x)
-        low_level_feat = self.deeplabv3plus.layer1(x)
-        x = self.deeplabv3plus.layer2(low_level_feat)
-        x = self.deeplabv3plus.layer3(x)
-        x = self.deeplabv3plus.layer4(x)
-        x = self.deeplabv3plus.aspp(x)
-        x = self.deeplabv3plus.decoder(x, low_level_feat)
+        x = self.model.stem(x)
+        low_level_feat = self.model.layer1(x)
+        x = self.model.layer2(low_level_feat)
+        x = self.model.layer3(x)
+        x = self.model.layer4(x)
+        x = self.model.aspp(x)
+        x = self.model.decoder(x, low_level_feat)
         
         # 全局池化
         x = self.global_pool(x)
@@ -292,7 +292,7 @@ class DeepLabV3PlusClassifierMultiHeadDisease(nn.Module):
         )
         
         # 移除最后的分类层
-        del self.deeplabv3plus.classifier
+        del self.model.classifier
         
         # 全局池化和多头疾病分类器
         self.global_pool = nn.AdaptiveAvgPool2d(1)
@@ -300,13 +300,13 @@ class DeepLabV3PlusClassifierMultiHeadDisease(nn.Module):
 
     def forward(self, x):
         # 获取特征
-        x = self.deeplabv3plus.stem(x)
-        low_level_feat = self.deeplabv3plus.layer1(x)
-        x = self.deeplabv3plus.layer2(low_level_feat)
-        x = self.deeplabv3plus.layer3(x)
-        x = self.deeplabv3plus.layer4(x)
-        x = self.deeplabv3plus.aspp(x)
-        x = self.deeplabv3plus.decoder(x, low_level_feat)
+        x = self.model.stem(x)
+        low_level_feat = self.model.layer1(x)
+        x = self.model.layer2(low_level_feat)
+        x = self.model.layer3(x)
+        x = self.model.layer4(x)
+        x = self.model.aspp(x)
+        x = self.model.decoder(x, low_level_feat)
         
         # 全局池化
         x = self.global_pool(x)
@@ -329,7 +329,7 @@ class DeepLabV3PlusClassifierAttentionHeadOutputMerge(nn.Module):
         )
         
         # 移除最后的分类层
-        del self.deeplabv3plus.classifier
+        del self.model.classifier
         
         # 全局池化和注意力分类头
         self.global_pool = nn.AdaptiveAvgPool2d(1)
@@ -337,13 +337,13 @@ class DeepLabV3PlusClassifierAttentionHeadOutputMerge(nn.Module):
 
     def forward(self, x):
         # 获取特征
-        x = self.deeplabv3plus.stem(x)
-        low_level_feat = self.deeplabv3plus.layer1(x)
-        x = self.deeplabv3plus.layer2(low_level_feat)
-        x = self.deeplabv3plus.layer3(x)
-        x = self.deeplabv3plus.layer4(x)
-        x = self.deeplabv3plus.aspp(x)
-        x = self.deeplabv3plus.decoder(x, low_level_feat)
+        x = self.model.stem(x)
+        low_level_feat = self.model.layer1(x)
+        x = self.model.layer2(low_level_feat)
+        x = self.model.layer3(x)
+        x = self.model.layer4(x)
+        x = self.model.aspp(x)
+        x = self.model.decoder(x, low_level_feat)
         
         # 全局池化
         x = self.global_pool(x)  # 输出形状: (bs, 256, 1, 1)
