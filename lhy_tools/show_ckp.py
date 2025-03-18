@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import torch
 import os
-
 from networks.deeplabv3plus_debug import DeepLabV3PlusClassifierAttentionHeadOutputMerge
 
 
@@ -11,7 +10,12 @@ class ModelVisualizer(tk.Tk):
         super().__init__()
 
         self.title("PyTorch Model Weight Visualizer")
-        self.geometry("1000x700")  # 增大整个窗口的尺寸
+        self.geometry("1000x700")  # 设置初始窗口大小
+
+        # 配置列的权重，使两列平均分配空间
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
         # Model passed as argument
         self.model = model
@@ -22,31 +26,62 @@ class ModelVisualizer(tk.Tk):
 
     def create_widgets(self):
         # Left Frame for PyTorch Model
-        self.left_frame = tk.Frame(self, width=500, height=700)  # 增大左侧的宽度
-        self.left_frame.grid(row=0, column=0, padx=15, pady=15)
-        self.left_frame.grid_propagate(False)
+        self.left_frame = tk.Frame(self)
+        self.left_frame.grid(row=0, column=0, padx=15, pady=15, sticky='nsew')
+        
+        # 配置left_frame的网格
+        self.left_frame.grid_columnconfigure(0, weight=1)
+        self.left_frame.grid_rowconfigure(1, weight=1)
 
-        self.left_label = tk.Label(self.left_frame, text="PyTorch Model Layers", font=("Arial", 14))  # 增大字体
-        self.left_label.pack(pady=10)
+        self.left_label = tk.Label(self.left_frame, text="PyTorch Model Layers", font=("Arial", 14))
+        self.left_label.grid(row=0, column=0, pady=10)
 
-        self.left_listbox = tk.Listbox(self.left_frame, width=50, height=30, font=("Arial", 12))  # 增大字体并调整列表框大小
-        self.left_listbox.pack()
+        # 创建左侧滚动条
+        left_scrollbar = tk.Scrollbar(self.left_frame)
+        left_scrollbar.grid(row=1, column=1, sticky='ns')
+
+        self.left_listbox = tk.Listbox(self.left_frame, 
+                                     font=("Arial", 12),
+                                     yscrollcommand=left_scrollbar.set)
+        self.left_listbox.grid(row=1, column=0, sticky='nsew')
+        left_scrollbar.config(command=self.left_listbox.yview)
 
         # Right Frame for PTH Weights
-        self.right_frame = tk.Frame(self, width=500, height=700)  # 增大右侧的宽度
-        self.right_frame.grid(row=0, column=1, padx=15, pady=15)
-        self.right_frame.grid_propagate(False)
+        self.right_frame = tk.Frame(self)
+        self.right_frame.grid(row=0, column=1, padx=15, pady=15, sticky='nsew')
+        
+        # 配置right_frame的网格
+        self.right_frame.grid_columnconfigure(0, weight=1)
+        self.right_frame.grid_rowconfigure(1, weight=1)
 
-        self.right_label = tk.Label(self.right_frame, text="PTH File Weights", font=("Arial", 14))  # 增大字体
-        self.right_label.pack(pady=10)
+        self.right_label = tk.Label(self.right_frame, text="PTH File Weights", font=("Arial", 14))
+        self.right_label.grid(row=0, column=0, pady=10)
 
-        self.right_listbox = tk.Listbox(self.right_frame, width=50, height=30, font=("Arial", 12))  # 增大字体并调整列表框大小
-        self.right_listbox.pack()
+        # 创建右侧滚动条
+        right_scrollbar = tk.Scrollbar(self.right_frame)
+        right_scrollbar.grid(row=1, column=1, sticky='ns')
 
-        # Buttons
-        self.load_pth_button = tk.Button(self, text="Load PTH File", command=self.load_pth,
-                                         font=("Arial", 12))  # 增大按钮字体
-        self.load_pth_button.grid(row=1, column=1, padx=10, pady=15)
+        self.right_listbox = tk.Listbox(self.right_frame, 
+                                      font=("Arial", 12),
+                                      yscrollcommand=right_scrollbar.set)
+        self.right_listbox.grid(row=1, column=0, sticky='nsew')
+        right_scrollbar.config(command=self.right_listbox.yview)
+
+        # Buttons Frame
+        button_frame = tk.Frame(self)
+        button_frame.grid(row=1, column=0, columnspan=2, pady=15)
+
+        self.load_pth_button = tk.Button(button_frame, 
+                                       text="Load PTH File", 
+                                       command=self.load_pth,
+                                       font=("Arial", 12))
+        self.load_pth_button.pack(side=tk.LEFT, padx=5)
+
+        self.compare_button = tk.Button(button_frame,
+                                      text="Compare Weights",
+                                      command=self.compare_weights,
+                                      font=("Arial", 12))
+        self.compare_button.pack(side=tk.LEFT, padx=5)
 
         # Display model information if model is already passed
         if self.model is not None:
