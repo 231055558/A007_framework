@@ -3,6 +3,8 @@ from tkinter import filedialog, messagebox
 import torch
 import os
 
+from networks.deeplabv3plus_debug import DeepLabV3PlusClassifierAttentionHeadOutputMerge
+
 
 class ModelVisualizer(tk.Tk):
     def __init__(self, model=None):
@@ -112,6 +114,6 @@ if __name__ == "__main__":
     image_size = 224  # 假设输入图像大小为 224x224
 
     # 创建模型实例
-    model = CrossFieldTransformer(depth=depth, in_channels=in_channels, num_classes=num_classes)
+    model = DeepLabV3PlusClassifierAttentionHeadOutputMerge(num_classes=8)
     app = ModelVisualizer(model=model)
     app.mainloop()
