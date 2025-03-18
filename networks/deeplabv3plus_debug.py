@@ -210,7 +210,7 @@ class DeepLabV3PlusClassifier(nn.Module):
         super(DeepLabV3PlusClassifier, self).__init__()
         
         # DeepLabV3Plus主干网络
-        self.deeplabv3plus = DeepLabV3Plus(
+        self.model = DeepLabV3Plus(
             depth=backbone_depth,
             in_channels=in_channels,
             num_classes=256,  # 中间特征维度
@@ -247,7 +247,7 @@ class DeepLabV3PlusClassifierAttentionHead(nn.Module):
         super(DeepLabV3PlusClassifierAttentionHead, self).__init__()
         
         # DeepLabV3Plus主干网络
-        self.deeplabv3plus = DeepLabV3Plus(
+        self.model = DeepLabV3Plus(
             depth=backbone_depth,
             in_channels=in_channels,
             num_classes=256,  # 中间特征维度
@@ -284,7 +284,7 @@ class DeepLabV3PlusClassifierMultiHeadDisease(nn.Module):
         super(DeepLabV3PlusClassifierMultiHeadDisease, self).__init__()
         
         # DeepLabV3Plus主干网络
-        self.deeplabv3plus = DeepLabV3Plus(
+        self.model = DeepLabV3Plus(
             depth=backbone_depth,
             in_channels=in_channels,
             num_classes=256,  # 中间特征维度
@@ -321,7 +321,7 @@ class DeepLabV3PlusClassifierAttentionHeadOutputMerge(nn.Module):
         super(DeepLabV3PlusClassifierAttentionHeadOutputMerge, self).__init__()
         
         # DeepLabV3Plus主干网络 - 注意这里使用3通道输入
-        self.deeplabv3plus = DeepLabV3Plus(
+        self.model = DeepLabV3Plus(
             depth=backbone_depth,
             in_channels=3,  # RGB输入
             num_classes=256,  # 中间特征维度
