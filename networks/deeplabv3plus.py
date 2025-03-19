@@ -156,7 +156,7 @@ class DeepLabV3PlusClassifierImproved(nn.Module):
         super().__init__()
         # 基本结构同之前
         self.model = deeplabv3_resnet50(aux_loss=False, num_classes=256)
-        self.model.backbone.conv1 = nn.Conv2d(in_channels=6, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.model.backbone.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
         del self.model.aux_classifier
         
         # 改进1: 使用金字塔池化而非单一全局池化
@@ -166,12 +166,13 @@ class DeepLabV3PlusClassifierImproved(nn.Module):
         
         # 改进2: 调整分类头以处理多尺度特征
         total_features = 256 * (1*1 + 2*2 + 4*4)  # 所有池化层输出特征的总和
-        self.fc = nn.Sequential(
-            nn.Linear(total_features, 512),
-            nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(512, num_classes)
-        )
+        # self.fc = nn.Sequential(
+        #     nn.Linear(total_features, 512),
+        #     nn.ReLU(),
+        #     nn.Dropout(0.2),
+        #     nn.Linear(512, num_classes)
+        # )
+        self.fc = AttentionFC(in_features=total_features, num_classes=num_classes)
 
     def forward(self, x):
         # 特征提取
@@ -195,7 +196,7 @@ class DeepLabV3PlusClassifierWithAttention(nn.Module):
         super().__init__()
         # 基本结构
         self.model = deeplabv3_resnet50(aux_loss=False, num_classes=256)
-        self.model.backbone.conv1 = nn.Conv2d(in_channels=6, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.model.backbone.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
         del self.model.aux_classifier
         
         # 空间注意力模块
@@ -218,7 +219,8 @@ class DeepLabV3PlusClassifierWithAttention(nn.Module):
         
         # 全局池化和分类头
         self.global_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc = nn.Linear(256, num_classes)
+        # self.fc = nn.Linear(256, num_classes)
+        self.fc = AttentionFC(in_features=256, num_classes=num_classes)
 
     def forward(self, x):
         # 特征提取
