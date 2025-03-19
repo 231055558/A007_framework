@@ -74,7 +74,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
         # self.pretrain_ckp = "./best_model.pth"
 
     def train(self, epoch=300, val=True):
-        # load_model_weights(self.model, self.pretrain_ckp)
+        load_model_weights(self.model, self.pretrain_ckp)
         train_output_merge_model(
             model=self.model,
             model_name=self.model_name,
