@@ -204,3 +204,69 @@ class MultiHeadDiseaseClassifier(nn.Module):
         loss = bce_loss * focal_weight
         
         return loss.mean()
+
+class MutualRestraintHead(nn.Module):
+    def __init__(self, in_features, num_classes):
+        super(MutualRestraintHead, self).__init__()
+        self.fc_normal = nn.Linear(in_features, 1)
+        self.fc_disease = nn.Linear(in_features, num_classes - 1)
+        self.attention = nn.Sequential(
+            nn.Linear(in_features, in_features // 2),
+            nn.ReLU(),
+            nn.Linear(in_features // 2, in_features),
+            nn.Sigmoid()
+        )
+        self.sigmoid = nn.Sigmoid()
+        self.num_classes = num_classes
+
+    def forward(self, x):
+        # 计算正常和疾病的基础分数
+        p_normal = self.fc_normal(x)  # (batch_size, 1)
+        
+        # 注意力机制处理特征
+        attention_weights = self.attention(x)
+        weighted_features = x * attention_weights
+        p_disease = self.fc_disease(weighted_features)  # (batch_size, num_classes-1)
+
+        # 计算互斥概率
+        normal_score = self.sigmoid(p_normal)  # (batch_size, 1)
+        disease_scores = self.sigmoid(p_disease)  # (batch_size, num_classes-1)
+        
+        # 计算互斥权重
+        disease_weight = 1 - normal_score.mean()  # 标量
+        normal_weight = 1 - disease_scores.mean()  # 标量
+        
+        # 应用互斥权重
+        p_normal_out = p_normal * normal_weight
+        p_disease_out = p_disease * disease_weight
+        
+        # 合并输出
+        output = torch.cat([p_normal_out, p_disease_out], dim=1)
+        return output
+
+class MutualRestraintLoss(nn.Module):
+    def __init__(self, alpha=0.5):
+        super(MutualRestraintLoss, self).__init__()
+        self.alpha = alpha
+        self.bce = nn.BCEWithLogitsLoss()
+    
+    def forward(self, outputs, targets):
+        # 分离正常和疾病的预测
+        normal_pred = outputs[:, 0]
+        disease_pred = outputs[:, 1:]
+        
+        # 分离正常和疾病的标签
+        normal_target = targets[:, 0]
+        disease_target = targets[:, 1:]
+        
+        # 基础分类损失
+        normal_loss = self.bce(normal_pred, normal_target)
+        disease_loss = self.bce(disease_pred, disease_target)
+        
+        # 互斥损失
+        mutual_loss = torch.mean(normal_pred * disease_pred.mean(dim=1))
+        
+        # 组合损失
+        total_loss = normal_loss + disease_loss + self.alpha * mutual_loss
+        
+        return total_loss
