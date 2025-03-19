@@ -19,7 +19,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
         # self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
         self.pretrain_ckp = "./best_model.pth"
 
-        self.model_name = 'DeepLabV3Plus_Improve_Color_Merge_Ce_Attention_Head_512_Bce_Adam_Lr1e_3_Bs32'
+        self.model_name = 'DeepLabV3Plus_Mutual_Color_Merge_Ce_Attention_Head_512_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
                                         Resize_Numpy((1080, 1080)),
                                         Random_Roi_Crop((768, 768)),
@@ -116,5 +116,5 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
 
 if __name__ == '__main__':
     model = DeepLabV3Plus_Color_Merge_Ce_Attention_Head()
-    model.val()
+    model.train()
 
