@@ -1,10 +1,10 @@
-from loss.mutualrestraintloss import MutualRestraintLoss
 from dataset.transform.color_exchange import RandomColorTransfer
 from models.load import load_model_weights
-from networks.deeplabv3plus import DeepLabV3PlusClassifierMutualHeadOutputMerge
+from networks.deeplabv3plus import DeepLabV3PlusClassifierImproved
 from tools.predict import predict_model
 from tools.train import train_output_merge_model
 from tools.val import val_output_merge_model
+from loss.cross_entropy import CrossEntropyLoss
 from metrics.a007_metric import A007_Metrics_Label
 from optims.optimizer import Optimizer
 from dataset.A007_txt_merge_model import A007Dataset
@@ -19,7 +19,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
         # self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
         self.pretrain_ckp = "./best_model.pth"
 
-        self.model_name = 'DeepLabV3Plus_Spatial_Att_Color_Merge_Ce_Attention_Head_512_Bce_Adam_Lr1e_3_Bs32'
+        self.model_name = 'DeepLabV3Plus_Improve_Color_Merge_Ce_Attention_Head_512_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
                                         Resize_Numpy((1080, 1080)),
                                         Random_Roi_Crop((768, 768)),
@@ -41,14 +41,14 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
                                       # Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
                                       AdaptiveNormalize()
                                       ])
-        self.model = DeepLabV3PlusClassifierMutualHeadOutputMerge(num_classes=8)
+        self.model = DeepLabV3PlusClassifierImproved(num_classes=8)
 
         self.train_loader = DataLoader(A007Dataset(txt_file="train.txt",
                                                    root_dir=self.data_root,
                                                    transform=self.transform_train,
                                                    seed=42,
                                                    preload=False),
-                                       batch_size=4,
+                                       batch_size=2,
                                        shuffle=True,
                                        num_workers=4,
                                        pin_memory=True
@@ -58,12 +58,12 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
                                                  transform=self.transform_val,
                                                  seed=42,
                                                  preload=False),
-                                     batch_size=4,
+                                     batch_size=2,
                                      shuffle=False,
                                      num_workers=4,
                                      pin_memory=True
                                      )
-        self.loss_fn = MutualRestraintLoss(use_sigmoid=True)
+        self.loss_fn = CrossEntropyLoss(use_sigmoid=True)
         self.metric = A007_Metrics_Label(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
         self.optimizer = Optimizer(model_params=self.model.parameters(),
                                    optimizer='adam',
@@ -116,5 +116,5 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
 
 if __name__ == '__main__':
     model = DeepLabV3Plus_Color_Merge_Ce_Attention_Head()
-    model.train()
+    model.val()
 
