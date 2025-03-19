@@ -182,16 +182,7 @@ class MultiHeadDiseaseClassifier(nn.Module):
         
         return weighted_logits
     
-    # def get_loss_weights(self, pos_counts, neg_counts):
-    #     """
-    #     计算每个类别的损失权重
-    #     """
-    #     total_samples = pos_counts + neg_counts
-    #     pos_weights = torch.sqrt(neg_counts / pos_counts)
-    #     return pos_weights
 
-
-class DiseaseClassificationLoss(nn.Module):
     def __init__(self, pos_weights):
         super(DiseaseClassificationLoss, self).__init__()
         self.pos_weights = pos_weights
