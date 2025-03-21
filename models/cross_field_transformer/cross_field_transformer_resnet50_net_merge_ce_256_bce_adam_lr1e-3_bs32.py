@@ -15,23 +15,32 @@ from visualization.visualizer import Visualizer
 
 class Cross_Field_Transformer_ResNet50_Color_Merge_224_Bce_Adam_Lr1e_3_Bs32:
     def __init__(self):
-        self.data_root = '../../../data/data_merge'
+        self.data_root = '../../../data/data_extra'
         self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
+        imgsz = 768
 
         self.model_name = 'Cross_Field_Transformer_ResNet50_Color_Merge_224_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
-                                        RandomColorTransfer(source_image_dir='../../../data/data_merge/images'),
+                                        Resize_Numpy((1080, 1080)),
+                                        Random_Roi_Crop((imgsz, imgsz)),
+                                        # RandomColorTransfer(source_image_dir='../../../data/data_merge/images'),
                                         RandomFlip(),
-                                        RandomCrop((256, 256)),
+                                        # RandomCrop((512, 512)),
                                         ToTensor(),
-                                        Resize((256, 256)),
-                                        Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+                                        # Resize((512, 512)),
+                                        # Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
+                                        AdaptiveNormalize()
+                                        ])
 
         self.transform_val = Compose([LoadImageFromFile(),
-                                      CenterCrop((256, 256)),
+                                      Resize_Numpy((1080, 1080)),
+                                      Center_Roi_Crop((imgsz, imgsz)),
+                                      # CenterCrop((512, 512)),
                                       ToTensor(),
-                                      Resize((256, 256)),
-                                      Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
+                                      # Resize((512, 512)),
+                                      # Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
+                                      AdaptiveNormalize()
+                                      ])
         self.model = CrossFieldTransformer(num_classes=8)
 
         self.train_loader = DataLoader(A007Dataset(txt_file="train.txt",
@@ -39,7 +48,7 @@ class Cross_Field_Transformer_ResNet50_Color_Merge_224_Bce_Adam_Lr1e_3_Bs32:
                                                    transform=self.transform_train,
                                                    seed=42,
                                                    preload=False),
-                                       batch_size=4,
+                                       batch_size=2,
                                        shuffle=True,
                                        num_workers=4,
                                        pin_memory=True
@@ -49,7 +58,7 @@ class Cross_Field_Transformer_ResNet50_Color_Merge_224_Bce_Adam_Lr1e_3_Bs32:
                                                  transform=self.transform_val,
                                                  seed=42,
                                                  preload=False),
-                                     batch_size=4,
+                                     batch_size=2,
                                      shuffle=False,
                                      num_workers=4,
                                      pin_memory=True

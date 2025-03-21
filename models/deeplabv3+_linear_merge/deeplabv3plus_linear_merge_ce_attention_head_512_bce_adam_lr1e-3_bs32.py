@@ -2,8 +2,8 @@ from dataset.transform.color_exchange import RandomColorTransfer
 from models.load import load_model_weights
 from networks.deeplabv3plus import DeepLabV3PlusClassifierAttentionHeadLinearMerge
 from tools.predict import predict_model
-from tools.train import train_linear_merge_model
-from tools.val import val_linear_merge_model
+from tools.train import train_net_merge_model
+from tools.val import val_net_merge_model
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.a007_metric import A007_Metrics_Label
 from optims.optimizer import Optimizer
@@ -75,7 +75,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
 
     def train(self, epoch=300, val=True):
         load_model_weights(self.model, self.pretrain_ckp)
-        train_linear_merge_model(
+        train_net_merge_model(
             model=self.model,
             model_name=self.model_name,
             train_loader=self.train_loader,
@@ -93,7 +93,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
     def val(self):
         trained_ckp = "./best_model.pth"
         load_model_weights(self.model, trained_ckp)
-        val_linear_merge_model(
+        val_net_merge_model(
             model=self.model,
             model_name=self.model_name,
             val_loader=self.val_loader,
