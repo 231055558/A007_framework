@@ -3,7 +3,7 @@ import shutil
 import random
 
 # 配置参数
-dataset_txt = "../../data/data_merge_txt/data_merge_label.txt"  # 你的数据集文件
+dataset_txt = "../../data/data_merge/data_merge_label.txt"  # 你的数据集文件
 # image_folder = "../../data/images"   # 存放图片的文件夹
 output_folder = "../../data/data_merge_txt/"  # 结果保存的文件夹
 train_ratio = 0.8         # 训练集比例

@@ -12,8 +12,8 @@ def crop_black_edges(image):
     # 转换为灰度图像
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # 找到非黑色区域的边界
-    rows = np.any(gray != 0, axis=1)  # 检查每一行是否有非黑色像素
-    cols = np.any(gray != 0, axis=0)  # 检查每一列是否有非黑色像素
+    rows = np.any(gray > 5, axis=1)  # 检查每一行是否有非黑色像素
+    cols = np.any(gray > 5, axis=0)  # 检查每一列是否有非黑色像素
     # 获取非黑色区域的最小和最大边界
     rmin, rmax = np.where(rows)[0][[0, -1]] if np.any(rows) else (0, gray.shape[0])
     cmin, cmax = np.where(cols)[0][[0, -1]] if np.any(cols) else (0, gray.shape[1])
@@ -48,6 +48,6 @@ def process_folder(input_folder, output_folder):
         cv2.imwrite(output_path, cropped_image)
 
 # 示例使用
-input_folder = "/mnt/mydisk/medical_seg/fwwb_a007/data/data_merge/images_"  # 输入文件夹路径
-output_folder = "/mnt/mydisk/medical_seg/fwwb_a007/data/data_merge/images"     # 输出文件夹路径
+input_folder = "/mnt/mydisk/medical_seg/fwwb_a007/data/new_/M1"  # 输入文件夹路径
+output_folder = "/mnt/mydisk/medical_seg/fwwb_a007/data/new/M1"     # 输出文件夹路径
 process_folder(input_folder, output_folder)
