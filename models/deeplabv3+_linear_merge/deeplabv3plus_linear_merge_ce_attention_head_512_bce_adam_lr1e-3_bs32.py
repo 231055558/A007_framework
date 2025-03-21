@@ -3,7 +3,7 @@ from models.load import load_model_weights
 from networks.deeplabv3plus import DeepLabV3PlusClassifierAttentionHeadLinearMerge
 from tools.predict import predict_model
 from tools.train import train_linear_merge_model
-from tools.val import val_output_merge_model
+from tools.val import val_linear_merge_model
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.a007_metric import A007_Metrics_Label
 from optims.optimizer import Optimizer
@@ -15,7 +15,7 @@ from visualization.visualizer import Visualizer
 
 class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
     def __init__(self):
-        self.data_root = '../../../data/data_merge'
+        self.data_root = '../../../data/data_extra'
         # self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
         self.pretrain_ckp = "./best_model.pth"
 
@@ -93,7 +93,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
     def val(self):
         trained_ckp = "./best_model.pth"
         load_model_weights(self.model, trained_ckp)
-        val_output_merge_model(
+        val_linear_merge_model(
             model=self.model,
             model_name=self.model_name,
             val_loader=self.val_loader,

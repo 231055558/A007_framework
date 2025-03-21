@@ -1,7 +1,7 @@
 import torch
 from tqdm import tqdm
 import time
-from tools.val import val_double_merge_model, val_model, val_color_merge_model, val_output_merge_model, val_net_merge_model
+from tools.val import val_double_merge_model, val_model, val_color_merge_model, val_output_merge_model, val_linear_merge_model
 
 
 def train_model(
@@ -334,7 +334,7 @@ def train_linear_merge_model(
         #     print(f'Saved best model with loss {epoch_loss:.4f}')
         if val:
             # 计算验证指标
-            metrics = val_net_merge_model(model, val_loader, metric, model_name, device)
+            metrics = val_linear_merge_model(model, val_loader, metric, model_name, device)
 
             # 更新可视化图表
             visualizer.update_metrics(metrics)

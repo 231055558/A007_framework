@@ -218,7 +218,7 @@ if __name__ == '__main__':
     in_channels = 3
     num_classes = 10
     batch_size = 2
-    image_size = 224  # 假设输入图像大小为 224x224
+    image_size = 768  # 假设输入图像大小为 224x224
 
     # 创建模型实例
     model = CrossFieldTransformer(depth=depth, in_channels=in_channels, num_classes=num_classes)

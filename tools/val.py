@@ -90,7 +90,7 @@ def val_output_merge_model(
     return metrics
 
 
-def val_net_merge_model(
+def val_linear_merge_model(
         model,
         val_loader,
         metric,
