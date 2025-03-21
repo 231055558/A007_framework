@@ -4,7 +4,7 @@ from networks.deeplabv3plus import DeepLabV3PlusClassifierImproved
 from tools.predict import predict_model
 from tools.train import train_output_merge_model
 from tools.val import val_output_merge_model
-from loss.cross_entropy import CrossEntropyLoss
+from loss.mutualrestraintloss import MutualRestraintLoss
 from metrics.a007_metric import A007_Metrics_Label
 from optims.optimizer import Optimizer
 from dataset.A007_txt_merge_model import A007Dataset
@@ -63,7 +63,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
                                      num_workers=4,
                                      pin_memory=True
                                      )
-        self.loss_fn = CrossEntropyLoss(use_sigmoid=True)
+        self.loss_fn = MutualRestraintLoss()
         self.metric = A007_Metrics_Label(thresholds=[0.1, 0.3, 0.5, 0.7, 0.9])
         self.optimizer = Optimizer(model_params=self.model.parameters(),
                                    optimizer='adam',

@@ -279,7 +279,7 @@ def train_output_merge_model(
     print("Training finished")
 
 
-def train_net_merge_model(
+def train_linear_merge_model(
         model,
         train_loader,
         loss_fn,

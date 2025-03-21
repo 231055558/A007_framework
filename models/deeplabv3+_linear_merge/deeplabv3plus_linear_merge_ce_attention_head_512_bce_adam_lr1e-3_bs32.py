@@ -1,8 +1,8 @@
 from dataset.transform.color_exchange import RandomColorTransfer
 from models.load import load_model_weights
-from networks.deeplabv3plus import DeepLabV3PlusClassifierMutualHeadOutputMerge
+from networks.deeplabv3plus import DeepLabV3PlusClassifierAttentionHeadLinearMerge
 from tools.predict import predict_model
-from tools.train import train_output_merge_model
+from tools.train import train_linear_merge_model
 from tools.val import val_output_merge_model
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.a007_metric import A007_Metrics_Label
@@ -19,7 +19,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
         # self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
         self.pretrain_ckp = "./best_model.pth"
 
-        self.model_name = 'DeepLabV3Plus_Spatial_Att_Color_Merge_Ce_Attention_Head_512_Bce_Adam_Lr1e_3_Bs32'
+        self.model_name = 'DeepLabV3Plus_Linear_Merge_Ce_Attention_Head_512_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
                                         Resize_Numpy((1080, 1080)),
                                         Random_Roi_Crop((768, 768)),
@@ -41,7 +41,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
                                       # Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375)),
                                       AdaptiveNormalize()
                                       ])
-        self.model = DeepLabV3PlusClassifierMutualHeadOutputMerge(num_classes=8)
+        self.model = DeepLabV3PlusClassifierAttentionHeadLinearMerge(num_classes=8)
 
         self.train_loader = DataLoader(A007Dataset(txt_file="train.txt",
                                                    root_dir=self.data_root,
@@ -75,7 +75,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
 
     def train(self, epoch=300, val=True):
         load_model_weights(self.model, self.pretrain_ckp)
-        train_output_merge_model(
+        train_linear_merge_model(
             model=self.model,
             model_name=self.model_name,
             train_loader=self.train_loader,
@@ -116,5 +116,5 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
 
 if __name__ == '__main__':
     model = DeepLabV3Plus_Color_Merge_Ce_Attention_Head()
-    model.train()
+    model.val()
 
