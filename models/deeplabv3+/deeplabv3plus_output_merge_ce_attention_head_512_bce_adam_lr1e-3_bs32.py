@@ -23,15 +23,15 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
         self.transform_train = Compose([LoadImageFromFile(),
                                         RandomColorTransfer(source_image_dir='../../../data/data_merge/images'),
                                         RandomFlip(),
-                                        RandomCrop((512, 512)),
+                                        RandomCrop((768, 768)),
                                         ToTensor(),
-                                        Resize((512, 512)),
+                                        Resize((768, 768)),
                                         Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
 
         self.transform_val = Compose([LoadImageFromFile(),
-                                      CenterCrop((512, 512)),
+                                      CenterCrop((768, 768)),
                                       ToTensor(),
-                                      Resize((512, 512)),
+                                      Resize((768, 768)),
                                       Preprocess(mean=(123.675, 116.28, 103.53), std=(58.395, 57.12, 57.375))])
         self.model = DeepLabV3PlusClassifierAttentionHeadOutputMerge(num_classes=8)
 
@@ -50,7 +50,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
                                                  transform=self.transform_val,
                                                  seed=42,
                                                  preload=False),
-                                     batch_size=2,
+                                     batch_size=4,
                                      shuffle=False,
                                      num_workers=4,
                                      pin_memory=True
@@ -83,7 +83,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
         )
 
     def val(self):
-        trained_ckp = "./best_model.pth"
+        trained_ckp = "/home/li/下载/best_model.pth"
         load_model_weights(self.model, trained_ckp)
         val_output_merge_model(
             model=self.model,
@@ -108,5 +108,5 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
 
 if __name__ == '__main__':
     model = DeepLabV3Plus_Color_Merge_Ce_Attention_Head()
-    model.train()
+    model.val()
 

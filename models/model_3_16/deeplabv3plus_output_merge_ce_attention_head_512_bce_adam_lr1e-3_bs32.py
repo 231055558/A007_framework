@@ -1,7 +1,7 @@
 from dataset.transform.color_exchange import RandomColorTransfer
 from models.load import load_model_weights
 from networks.deeplabv3plus import DeepLabV3PlusClassifierAttentionHeadOutputMerge
-from tools.predict import predict_model
+from tools.predict import predict_output_merge_model
 from tools.train import train_output_merge_model
 from tools.val import val_output_merge_model
 from loss.cross_entropy import CrossEntropyLoss
@@ -17,7 +17,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
     def __init__(self):
         self.data_root = '../../../data/data_merge'
         # self.pretrain_ckp = "../../../checkpoints/resnet50.pth"
-        self.pretrain_ckp = "./best_model.pth"
+        self.pretrain_ckp = "/home/li/下载/best_model.pth"
 
         self.model_name = 'DeepLabV3Plus_Color_Merge_Ce_Attention_Head_512_Bce_Adam_Lr1e_3_Bs32'
         self.transform_train = Compose([LoadImageFromFile(),
@@ -91,7 +91,7 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
         )
 
     def val(self):
-        trained_ckp = "./best_model.pth"
+        trained_ckp = "/home/li/下载/best_model.pth"
         load_model_weights(self.model, trained_ckp)
         val_output_merge_model(
             model=self.model,
@@ -101,10 +101,10 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
             device='cuda'
         )
 
-    def predict_model(self):
-        trained_ckp = "./best_model.pth"
+    def predict(self):
+        trained_ckp = "/home/li/下载/best_model.pth"
         load_model_weights(self.model, trained_ckp)
-        predict_model(
+        predict_output_merge_model(
             model=self.model,
             test_loader=self.val_loader,
             metric=self.metric,
