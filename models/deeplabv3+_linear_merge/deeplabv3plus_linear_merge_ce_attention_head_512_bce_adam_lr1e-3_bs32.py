@@ -116,5 +116,5 @@ class DeepLabV3Plus_Color_Merge_Ce_Attention_Head:
 
 if __name__ == '__main__':
     model = DeepLabV3Plus_Color_Merge_Ce_Attention_Head()
-    model.val()
+    model.train()
 
