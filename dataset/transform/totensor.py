@@ -13,3 +13,12 @@ class ToTensor(BaseTransform):
         results['img'] = img
         results['gt_label'] = label
         return results
+
+class DetectToTensor(BaseTransform):
+    def transform(self, results):
+        img = results['img']
+        img = img.astype(np.float32) / 255.0
+        img = torch.from_numpy(img).permute(2, 0, 1)
+
+        results['img'] = img
+        return results

@@ -11,7 +11,7 @@ class Resize(BaseTransform):
         self.target_size = target_size
         self.scale_factor = scale_factor
         if target_size is not None:
-            self.resize_function = torch_resize(self.target_size, antialias=None)
+            self.resize_function = torch_resize(self.target_size,antialias=None)#版本较新的torchvision会有这个参数
 
     def transform(self, results):
         img = results['img']
