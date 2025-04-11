@@ -15,6 +15,7 @@ import io
 
 from soloprocess import DeepLabV3Plus_Solo_Detect
 from batchprocess import DeepLabV3Plus_Batch_Detect
+from black_del import crop_black_edges_pil
 
 class ConnectionManager:
     def __init__(self):
@@ -79,8 +80,10 @@ async def upload_files(left_eye: UploadFile, right_eye: UploadFile) -> Dict:
         # 读取并处理图像
         left_content = await left_eye.read()
         left_image = Image.open(io.BytesIO(left_content))
+        left_image = crop_black_edges_pil(left_image)
         right_content = await right_eye.read()
         right_image = Image.open(io.BytesIO(right_content))
+        right_image = crop_black_edges_pil(right_image)
         result = DeepLabV3Plus_Solo_Detect(left_image, right_image).solo_detect(path=TEMP_DIR)
         print(result)
 
