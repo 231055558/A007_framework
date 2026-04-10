@@ -301,8 +301,3 @@ We acknowledge the contributions of the medical imaging and computer vision comm
 For questions, suggestions, or collaboration inquiries, please reach out:
 
 **Email**: [231055558@qq.com]
-
----
-
-**Last Updated**: April 2026
-**License**: [Specify your license here]
