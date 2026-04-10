@@ -300,7 +300,7 @@ We acknowledge the contributions of the medical imaging and computer vision comm
 
 For questions, suggestions, or collaboration inquiries, please reach out:
 
-**Email**: [your-email@example.com]
+**Email**: [231055558@qq.com]
 
 ---
 
